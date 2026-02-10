@@ -60,7 +60,14 @@ def load_model():
     )
     
     checkpoint = torch.load(str(MODEL_PATH), map_location='cpu')
-    state_dict = checkpoint['model_state_dict']
+    
+    # Handle different checkpoint formats
+    if 'model_state_dict' in checkpoint:
+        state_dict = checkpoint['model_state_dict']
+    elif 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    else:
+        state_dict = checkpoint
     
     # Handle legacy checkpoint with 'fc' instead of 'head'
     if 'fc.weight' in state_dict and 'head.weight' not in state_dict:

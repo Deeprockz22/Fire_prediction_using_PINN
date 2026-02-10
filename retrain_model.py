@@ -58,8 +58,8 @@ class PhysicsLSTM(nn.Module):
             dropout=dropout if num_layers > 1 else 0
         )
         
-        # Output projection
-        self.fc = nn.Linear(hidden_dim, output_dim * pred_horizon)
+        # Output projection (use 'head' to match predict.py expectations)
+        self.head = nn.Linear(hidden_dim, output_dim * pred_horizon)
     
     def forward(self, x):
         # x: [batch, seq_len, input_dim]
@@ -69,7 +69,7 @@ class PhysicsLSTM(nn.Module):
         last_hidden = lstm_out[:, -1, :]  # [batch, hidden_dim]
         
         # Project to prediction
-        out = self.fc(last_hidden)  # [batch, output_dim * pred_horizon]
+        out = self.head(last_hidden)  # [batch, output_dim * pred_horizon]
         
         # Reshape to [batch, pred_horizon, output_dim]
         out = out.view(-1, self.pred_horizon, self.output_dim)

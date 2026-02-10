@@ -9,16 +9,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
+import os
 from datetime import datetime
+
+# Fix encoding for Windows console
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
+# Get script directory for portable paths
+SCRIPT_DIR = Path(__file__).parent.resolve()
+sys.path.insert(0, str(SCRIPT_DIR))
 
 # Import required modules
 from fire_prediction.models.physics_informed import PhysicsInformedLSTM
 from fire_prediction.utils.physics import compute_heskestad_features
 
-# Configuration
-MODEL_PATH = "model/best_model.ckpt"
-INPUT_DIR = "Input"
-OUTPUT_DIR = "Output"
+# Configuration - use absolute paths relative to script location
+MODEL_PATH = SCRIPT_DIR / "model" / "best_model.ckpt"
+INPUT_DIR = SCRIPT_DIR / "Input"
+OUTPUT_DIR = SCRIPT_DIR / "Output"
 INPUT_SEQ_LEN = 30
 PRED_HORIZON = 10
 FIRE_DIAMETER = 0.3
@@ -37,6 +48,7 @@ def load_model():
         input_dim=6,
         hidden_dim=128,
         num_layers=2,
+        output_dim=3,  # HRR, Q_RADI, MLR
         dropout=0.1,
         lr=0.001,
         pred_horizon=PRED_HORIZON,
@@ -47,8 +59,15 @@ def load_model():
         validate_physics=True
     )
     
-    checkpoint = torch.load(MODEL_PATH, map_location='cpu')
-    model.load_state_dict(checkpoint['state_dict'])
+    checkpoint = torch.load(str(MODEL_PATH), map_location='cpu')
+    state_dict = checkpoint['model_state_dict']
+    
+    # Handle legacy checkpoint with 'fc' instead of 'head'
+    if 'fc.weight' in state_dict and 'head.weight' not in state_dict:
+        state_dict['head.weight'] = state_dict.pop('fc.weight')
+        state_dict['head.bias'] = state_dict.pop('fc.bias')
+    
+    model.load_state_dict(state_dict)
     model.eval()
     return model
 
@@ -97,6 +116,11 @@ def predict_single_file(model, hrr_file, output_dir):
         with torch.no_grad():
             y_pred_norm = model(x_tensor)
             y_pred_norm = y_pred_norm[0].numpy()
+            # Model outputs 3 channels [HRR, Q_RADI, MLR], extract HRR only
+            if y_pred_norm.shape[-1] == 3:
+                y_pred_norm = y_pred_norm[:, 0]  # Shape: [10, 3] -> [10]
+            elif len(y_pred_norm.shape) == 2 and y_pred_norm.shape[0] == PRED_HORIZON:
+                y_pred_norm = y_pred_norm[:, 0]
         
         # Denormalize
         hrr_mean = STATS['mean'][0]

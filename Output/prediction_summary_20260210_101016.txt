@@ -1,0 +1,27 @@
+======================================================================
+FIRE PREDICTION BATCH PROCESSING SUMMARY
+======================================================================
+
+Date: 2026-02-10 10:10:16
+Total files: 2
+Successful: 2
+
+======================================================================
+INDIVIDUAL RESULTS
+======================================================================
+
+File: EXTREME_TEST_5719_hrr.csv
+  MAE: 64.7551 kW
+  Relative Error: 28.72%
+  Peak HRR: 225.48 kW
+  Plot: EXTREME_TEST_5719_hrr_prediction.png
+
+File: test_11cm_mesh_hrr.csv
+  MAE: 22.8695 kW
+  Relative Error: 10.73%
+  Peak HRR: 213.16 kW
+  Plot: test_11cm_mesh_hrr_prediction.png
+
+======================================================================
+Average MAE: 43.81 kW
+Average Relative Error: 19.72%

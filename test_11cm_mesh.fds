@@ -1,0 +1,46 @@
+&HEAD CHID='test_11cm_mesh', TITLE='Fire Test with 11cm Mesh for ML Prediction' /
+
+&MESH IJK=27,27,36, XB=0.0,3.0,0.0,3.0,0.0,4.0 /  ! 11cm mesh (3.0/27 ≈ 0.11m)
+
+&TIME T_END=60.0 /
+
+&MISC SIMULATION_MODE='LES' /
+
+&REAC FUEL='PROPANE',
+      SOOT_YIELD=0.01,
+      CO_YIELD=0.001 /
+
+&SURF ID='BURNER',
+      HRRPUA=600.0,
+      COLOR='RED',
+      RAMP_Q='fire_ramp' /
+
+&RAMP ID='fire_ramp', T=0.0,  F=0.0 /
+&RAMP ID='fire_ramp', T=2.0,  F=0.2 /
+&RAMP ID='fire_ramp', T=5.0,  F=0.5 /
+&RAMP ID='fire_ramp', T=10.0, F=1.0 /
+&RAMP ID='fire_ramp', T=30.0, F=1.0 /
+&RAMP ID='fire_ramp', T=40.0, F=0.8 /
+&RAMP ID='fire_ramp', T=50.0, F=0.5 /
+&RAMP ID='fire_ramp', T=60.0, F=0.3 /
+
+&OBST XB=1.2,1.8,1.2,1.8,0.0,0.1, SURF_IDS='BURNER','INERT','INERT' /  ! 0.6m x 0.6m burner
+
+&VENT MB='XMIN', SURF_ID='OPEN' /
+&VENT MB='XMAX', SURF_ID='OPEN' /
+&VENT MB='YMIN', SURF_ID='OPEN' /
+&VENT MB='YMAX', SURF_ID='OPEN' /
+&VENT MB='ZMAX', SURF_ID='OPEN' /
+&VENT MB='ZMIN', SURF_ID='INERT' /
+
+&DEVC ID='HRR', QUANTITY='HRR', XYZ=1.5,1.5,2.0, SPATIAL_STATISTIC='VOLUME INTEGRAL' /
+&DEVC ID='Q_RADI', QUANTITY='RADIATIVE HEAT FLUX', XYZ=2.0,1.5,1.0 /
+&DEVC ID='MLR', QUANTITY='BURNING RATE', XYZ=1.5,1.5,0.05, SPATIAL_STATISTIC='SURFACE INTEGRAL', SURF_ID='BURNER' /
+
+&SLCF PBY=1.5, QUANTITY='TEMPERATURE' /
+&SLCF PBY=1.5, QUANTITY='HRRPUV' /
+
+&BNDF QUANTITY='WALL TEMPERATURE' /
+&BNDF QUANTITY='HEAT FLUX' /
+
+&TAIL /

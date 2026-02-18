@@ -1,12 +1,15 @@
 """
-Enhanced Dataset with Heskestad Physics Features
+Enhanced Dataset with Multiple Physics Correlations
 
 This dataset extends the base FireTimeSeriesDataset to include
-Heskestad-derived features (Approach 2).
+physics-informed features from multiple correlations.
 
-Input channels expanded from 3 to 6:
+Input channels expanded from 3 to 9:
 - Original: [HRR, Q_RADI, MLR]
-- Added: [Flame_Height, dFlame_Height/dt, Flame_Height_Deviation]
+- Heskestad: [Flame_Height, dFlame_Height/dt, Flame_Height_Deviation]
+- McCaffrey: [Plume_Region]
+- Thomas: [Ventilation_Flow]
+- Buoyancy: [Buoyancy_Power]
 """
 
 import sys
@@ -18,16 +21,19 @@ import torch
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from fire_prediction.data.dataset import FireTimeSeriesDataset
-from fire_prediction.utils.physics import compute_heskestad_features
+from fire_prediction.utils.physics import compute_heskestad_features, compute_enhanced_features
 
 
 class PhysicsInformedDataset(FireTimeSeriesDataset):
     """
-    Dataset with Heskestad physics features.
+    Dataset with enhanced physics features from multiple correlations.
     
     This class extends the base dataset to compute and include
-    three additional physics-informed features based on Heskestad's
-    flame height correlation.
+    six additional physics-informed features based on:
+    - Heskestad's flame height correlation
+    - McCaffrey's plume region classification
+    - Thomas ventilation flow correlation
+    - Buoyancy power scaling
     """
     
     def __init__(
@@ -38,8 +44,9 @@ class PhysicsInformedDataset(FireTimeSeriesDataset):
         pred_horizon: int = 10,
         standardize: bool = True,
         fire_diameter: float = 0.3,  # Fire diameter for Heskestad (m)
-        include_heskestad: bool = True,  # Toggle Heskestad features
-        train_stats: dict = None  # Pass train stats for val/test splits
+        include_heskestad: bool = True,  # Toggle enhanced physics features
+        train_stats: dict = None,  # Pass train stats for val/test splits
+        room_dims: dict = None  # Room dimensions for ventilation correlation
     ):
         """
         Initialize physics-informed dataset.
@@ -50,14 +57,20 @@ class PhysicsInformedDataset(FireTimeSeriesDataset):
             input_seq_len: Number of timesteps for input
             pred_horizon: Number of timesteps to predict
             standardize: Whether to normalize data
-            fire_diameter: Fire diameter for Heskestad correlation (m)
-            include_heskestad: If True, add 3 Heskestad features
+            fire_diameter: Fire diameter for physics correlations (m)
+            include_heskestad: If True, add 6 enhanced physics features
             train_stats: For val/test splits, pass the train split's stats
+            room_dims: Optional room dimensions for ventilation correlation
         """
         # Store parameters before calling parent init
         self.fire_diameter = fire_diameter
         self.include_heskestad = include_heskestad
         self.train_stats = train_stats
+        self.room_dims = room_dims if room_dims else {
+            'opening_area': 0.8,  # Default 0.8 m² opening
+            'opening_height': 1.0,  # Default 1.0 m height
+            'room_area': 9.0  # Default 3m x 3m room
+        }
         
         # Initialize base dataset
         super().__init__(
@@ -68,20 +81,23 @@ class PhysicsInformedDataset(FireTimeSeriesDataset):
             standardize=standardize
         )
         
-        # Add Heskestad features AFTER parent initialization
+        # Add enhanced physics features AFTER parent initialization
         if self.include_heskestad:
-            print(f"Computing Heskestad features (fire diameter={fire_diameter}m)...")
+            print(f"Computing enhanced physics features (fire diameter={fire_diameter}m)...")
             self._add_heskestad_features()
-            print(f"✅ Dataset now has 6 input channels (3 original + 3 Heskestad)")
+            print(f"✅ Dataset now has 9 input channels (3 original + 6 physics features)")
     
     def _add_heskestad_features(self):
         """
-        Compute and append Heskestad features to all processed scenarios.
+        Compute and append enhanced physics features to all processed scenarios.
         
         For each scenario, compute:
-        1. Flame height from HRR
+        1. Heskestad flame height from HRR
         2. Flame height growth rate
         3. Deviation from mean flame height
+        4. McCaffrey plume region indicator
+        5. Thomas ventilation flow factor
+        6. Buoyancy power scaling
         
         This is done in two passes:
         - Pass 1 (train only): Collect all features and compute normalization stats
@@ -103,10 +119,11 @@ class PhysicsInformedDataset(FireTimeSeriesDataset):
             else:
                 hrr_sequence = data_np[:, 0]
             
-            # Compute Heskestad features [timesteps, 3]
-            heskestad_feats = compute_heskestad_features(
+            # Compute enhanced physics features [timesteps, 6]
+            heskestad_feats = compute_enhanced_features(
                 hrr_sequence,
-                fire_diameter=self.fire_diameter
+                fire_diameter=self.fire_diameter,
+                room_dims=self.room_dims
             )
             
             all_heskestad_features.append(heskestad_feats)
@@ -132,7 +149,7 @@ class PhysicsInformedDataset(FireTimeSeriesDataset):
             
             # Concatenate with original data
             # Original: [timesteps, 3] (HRR, Q_RADI, MLR)
-            # Enhanced: [timesteps, 6] (HRR, Q_RADI, MLR, L_f, dL_f/dt, L_f_dev)
+            # Enhanced: [timesteps, 9] (HRR, Q_RADI, MLR, L_f, dL_f/dt, L_f_dev, plume, vent, buoyancy)
             enhanced_data = np.concatenate([data_np, heskestad_feats], axis=1)
             
             # Update the scenario's data tensor
@@ -140,46 +157,48 @@ class PhysicsInformedDataset(FireTimeSeriesDataset):
     
     def _compute_heskestad_stats_from_features(self, all_heskestad_features):
         """
-        Compute normalization statistics for Heskestad features from collected features.
+        Compute normalization statistics for enhanced physics features from collected features.
         
         Args:
-            all_heskestad_features: List of numpy arrays, each [timesteps, 3]
+            all_heskestad_features: List of numpy arrays, each [timesteps, 6]
         """
-        all_flame_heights = []
-        all_flame_rates = []
-        all_flame_devs = []
+        # Collect all 6 features
+        feature_arrays = [[] for _ in range(6)]
         
-        # Collect all features
         for heskestad_feats in all_heskestad_features:
-            all_flame_heights.append(heskestad_feats[:, 0])
-            all_flame_rates.append(heskestad_feats[:, 1])
-            all_flame_devs.append(heskestad_feats[:, 2])
+            for i in range(6):
+                feature_arrays[i].append(heskestad_feats[:, i])
         
-        # Compute stats
-        flame_height_mean = np.mean(np.concatenate(all_flame_heights))
-        flame_height_std = np.std(np.concatenate(all_flame_heights))
+        # Compute stats for each feature
+        feature_means = []
+        feature_stds = []
         
-        flame_rate_mean = np.mean(np.concatenate(all_flame_rates))
-        flame_rate_std = np.std(np.concatenate(all_flame_rates))
+        feature_names = [
+            'Flame height', 'Flame rate', 'Flame deviation',
+            'Plume region', 'Ventilation flow', 'Buoyancy power'
+        ]
         
-        flame_dev_mean = np.mean(np.concatenate(all_flame_devs))
-        flame_dev_std = np.std(np.concatenate(all_flame_devs))
+        print(f"Computed normalization stats for enhanced physics features:")
+        for i, name in enumerate(feature_names):
+            mean_val = np.mean(np.concatenate(feature_arrays[i]))
+            std_val = np.std(np.concatenate(feature_arrays[i]))
+            feature_means.append(mean_val)
+            feature_stds.append(std_val)
+            if i < 3:  # Only print first 3 to keep output concise
+                print(f"  {name}: μ={mean_val:.3f}, σ={std_val:.3f}")
         
         # Extend stats arrays
         self.stats['mean'] = np.concatenate([
             self.stats['mean'],
-            np.array([flame_height_mean, flame_rate_mean, flame_dev_mean], dtype=np.float32)
+            np.array(feature_means, dtype=np.float32)
         ])
         
         self.stats['std'] = np.concatenate([
             self.stats['std'],
-            np.array([flame_height_std, flame_rate_std, flame_dev_std], dtype=np.float32) + 1e-6
+            np.array(feature_stds, dtype=np.float32) + 1e-6
         ])
         
-        print(f"Computed normalization stats for Heskestad features:")
-        print(f"  Flame height: μ={flame_height_mean:.3f}, σ={flame_height_std:.3f}")
-        print(f"  Flame rate: μ={flame_rate_mean:.3f}, σ={flame_rate_std:.3f}")
-        print(f"  Flame dev: μ={flame_dev_mean:.3f}, σ={flame_dev_std:.3f}")
+        print(f"  ... and {len(feature_names) - 3} more correlation features")
 
 
 if __name__ == "__main__":

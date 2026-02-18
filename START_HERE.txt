@@ -1,0 +1,181 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║         🔥 FIRE PREDICTION TOOL - START HERE                     ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+🎯 THE ONLY COMMAND YOU NEED TO KNOW
+
+   python fire_predict.py
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 FIRST TIME SETUP (3 minutes)
+
+   Step 1: Run the script
+      python fire_predict.py
+
+   Step 2: Choose 5 (Setup & Diagnostics)
+
+   Step 3: Choose 1 (Run Full Setup Wizard)
+
+   Step 4: Wait for installation to complete
+
+   Step 5: Choose 2 (Run Example) from main menu
+
+   ✅ Done! You're ready to use the tool!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 MAIN MENU (7 OPTIONS)
+
+   1. 🎯 Quick Predict
+      → Enter your CSV file path
+      → Get instant prediction with plot
+
+   2. 📚 Run Example
+      → See how it works with sample data
+      → No setup needed!
+
+   3. 📦 Batch Process
+      → Process ALL files in Input/ folder
+      → Results saved to Output/
+      → Summary report generated
+
+   4. 📁 Manage Files
+      → List Input/Output files
+      → Open folders in file explorer
+      → Clean output directory
+      → No manual file handling!
+
+   5. 🔧 Setup & Diagnostics
+      → Run setup wizard
+      → Check system status
+      → Install dependencies
+      → View model info
+
+   6. ❓ Help & Information
+      → Quick start guide
+      → Command reference
+      → FAQ section
+      → Troubleshooting tips
+
+   7. 🚪 Exit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ QUICK COMMANDS (For Command Line Users)
+
+   # Predict one file
+   python fire_predict.py your_file.csv
+
+   # Try example
+   python fire_predict.py --example
+
+   # Batch process Input/ folder
+   python fire_predict.py --batch
+
+   # Run setup
+   python fire_predict.py setup
+
+   # Check status
+   python fire_predict.py check
+
+   # Show help
+   python fire_predict.py --help
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 COMMON WORKFLOWS
+
+   🔥 Predict One File:
+      1. Run: python fire_predict.py
+      2. Choose: 1 (Quick Predict)
+      3. Enter: path/to/your_simulation_hrr.csv
+      4. View: Prediction plot appears!
+
+   📦 Predict Many Files:
+      1. Run: python fire_predict.py
+      2. Choose: 4 (Manage Files) → 3 (Open Input folder)
+      3. Add: Copy your CSV files to Input/ folder
+      4. Press: Enter to return to menu
+      5. Choose: 3 (Batch Process)
+      6. Wait: All files processed automatically
+      7. View: Choose 4 → 4 (Open Output folder)
+
+   🔍 Check Results:
+      1. Run: python fire_predict.py
+      2. Choose: 4 (Manage Files)
+      3. Choose: 2 (List Output files)
+      4. See: All your results listed!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🆘 HAVING PROBLEMS?
+
+   Option A: Use built-in help
+      python fire_predict.py
+      → Choose 6 (Help & Information)
+      → Choose 4 (Troubleshooting Tips)
+
+   Option B: Run diagnostics
+      python fire_predict.py check
+
+   Option C: Run setup again
+      python fire_predict.py setup
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 WHAT YOU NEED
+
+   • Python 3.8 or higher
+   • Internet connection (first-time setup only)
+   • FDS simulation CSV files (*_hrr.csv format)
+
+   Everything else is automatic!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ KEY FEATURES
+
+   ✅ Single script does everything
+   ✅ Interactive menu (no commands to memorize)
+   ✅ Automatic file management (folders handled for you)
+   ✅ Setup wizard (installs packages automatically)
+   ✅ Batch processing (many files at once)
+   ✅ Built-in help (no external docs needed)
+   ✅ Self-diagnostic (checks health automatically)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎓 LEARNING TIME
+
+   • 2 minutes: Run example and see results
+   • 5 minutes: Predict your first file
+   • 10 minutes: Master batch processing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 FILE STRUCTURE
+
+   fire_prediction_deployment/
+   ├── fire_predict.py       ⭐ Run this (the only script!)
+   ├── README.md             📖 Quick reference
+   ├── requirements.txt      📦 Dependencies
+   ├── model/                💾 Trained AI model
+   ├── fire_prediction/      🧠 Core code
+   ├── examples/             📚 Sample data
+   ├── Input/                📥 Your CSV files go here
+   └── Output/               📤 Results appear here
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 THAT'S ALL YOU NEED!
+
+   Run the script → Use the menu → Get predictions
+
+   Simple as that! 🚀
+
+╔═══════════════════════════════════════════════════════════════════╗
+║  For questions: Menu Option 6 (Help) has everything built-in!   ║
+╚═══════════════════════════════════════════════════════════════════╝

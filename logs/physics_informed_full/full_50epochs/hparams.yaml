@@ -1,0 +1,12 @@
+dropout: 0.1
+fire_diameter: 0.3
+hidden_dim: 128
+input_dim: 6
+lambda_monotonic: 0.05
+lambda_physics: 0.1
+lr: 0.001
+num_layers: 2
+output_dim: 1
+pred_horizon: 10
+use_physics_loss: true
+validate_physics: true

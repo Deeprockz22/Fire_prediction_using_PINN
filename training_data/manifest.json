@@ -222,8 +222,20 @@
     "W6_WIND_1_1ms_METHANE_large_hrr.csv",
     "W7_WIND_1_8ms_ACETONE_small_hrr.csv",
     "W8_WIND_1_4ms_N-HEPTANE_large_hrr.csv",
-    "W9_WIND_3_6ms_METHANE_large_hrr.csv"
+    "W9_WIND_3_6ms_METHANE_large_hrr.csv",
+    "iso9705_hrr_118kw_hrr.csv",
+    "iso9705_hrr_120kw_hrr.csv",
+    "iso9705_hrr_140kw_hrr.csv",
+    "iso9705_hrr_158kw_hrr.csv",
+    "iso9705_hrr_184kw_hrr.csv",
+    "iso9705_hrr_196kw_hrr.csv",
+    "iso9705_hrr_201kw_hrr.csv",
+    "iso9705_hrr_282kw_hrr.csv",
+    "iso9705_hrr_64kw_hrr.csv",
+    "iso9705_hrr_82kw_hrr.csv",
+    "iso9705_hrr_97kw_hrr.csv",
+    "iso9705_room_hrr.csv"
   ],
-  "last_updated": "2026-02-08T06:25:52.373531",
-  "total_scenarios": 223
+  "last_updated": "2026-02-10T10:59:58.397641",
+  "total_scenarios": 235
 }

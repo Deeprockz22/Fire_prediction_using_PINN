@@ -1,12 +1,15 @@
 """
 Physics-Informed Utilities for Fire Prediction
 
-This module implements fire physics correlations, primarily Heskestad's
-correlations for flame height and plume behavior.
+This module implements fire physics correlations for flame and plume behavior.
 
 References:
 - Heskestad, G. (1984). "Engineering relations for fire plumes"
-- Fire Safety Journal, 7(1), 25-32
+  Fire Safety Journal, 7(1), 25-32
+- McCaffrey, B. J. (1979). "Purely buoyant diffusion flames"
+  National Bureau of Standards, NBSIR 79-1910
+- Thomas, P. H. (1963). "The size of flames from natural fires"
+  Symposium (International) on Combustion, 9(1), 844-859
 """
 
 import torch
@@ -14,7 +17,7 @@ import numpy as np
 from typing import Union, Tuple
 
 # ═══════════════════════════════════════════════════════════════════════
-# HESKESTAD CORRELATIONS
+# HESKESTAD CORRELATIONS (Flame Height)
 # ═══════════════════════════════════════════════════════════════════════
 
 def heskestad_flame_height(
@@ -228,12 +231,191 @@ def monotonicity_loss(
 # FEATURE ENGINEERING
 # ═══════════════════════════════════════════════════════════════════════
 
+def mccaffrey_plume_region(
+    Q: Union[float, np.ndarray, torch.Tensor],
+    z: float
+) -> Union[str, np.ndarray]:
+    """
+    Determine McCaffrey plume region (continuous, intermittent, or far-field).
+    
+    McCaffrey's regions based on z/Q^(2/5):
+    - Continuous flame: z/Q^(2/5) < 0.08
+    - Intermittent: 0.08 ≤ z/Q^(2/5) < 0.20
+    - Far-field plume: z/Q^(2/5) ≥ 0.20
+    
+    Args:
+        Q: Heat release rate (kW)
+        z: Height above fire source (m)
+    
+    Returns:
+        Normalized region indicator: 0.0 (continuous), 0.5 (intermittent), 1.0 (far-field)
+    """
+    if isinstance(Q, torch.Tensor):
+        Q_safe = torch.clamp(Q, min=1e-6)
+        z_star = z / torch.pow(Q_safe, 2/5)
+        # Continuous: 0, Intermittent: 0.5, Far-field: 1.0
+        region = torch.where(z_star < 0.08, torch.tensor(0.0),
+                           torch.where(z_star < 0.20, torch.tensor(0.5), torch.tensor(1.0)))
+        return region
+    
+    elif isinstance(Q, np.ndarray):
+        Q_safe = np.maximum(Q, 1e-6)
+        z_star = z / np.power(Q_safe, 2/5)
+        region = np.where(z_star < 0.08, 0.0, np.where(z_star < 0.20, 0.5, 1.0))
+        return region
+    
+    else:
+        Q_safe = max(Q, 1e-6)
+        z_star = z / (Q_safe ** (2/5))
+        if z_star < 0.08:
+            return 0.0
+        elif z_star < 0.20:
+            return 0.5
+        else:
+            return 1.0
+
+
+def thomas_window_flow(
+    Q: Union[float, np.ndarray, torch.Tensor],
+    A_w: float,
+    H_w: float
+) -> Union[float, np.ndarray, torch.Tensor]:
+    """
+    Calculate mass flow rate through window/opening using Thomas correlation.
+    
+    Mass flow rate through vertical opening:
+        m_dot ≈ 0.5 * A_w * sqrt(H_w) (kg/s)
+    
+    This represents natural ventilation driven by buoyancy.
+    
+    Args:
+        Q: Heat release rate (kW) - used for buoyancy calculation
+        A_w: Window/opening area (m²)
+        H_w: Window/opening height (m)
+    
+    Returns:
+        m_dot: Mass flow rate through opening (kg/s)
+    """
+    # Simplified Thomas correlation for natural ventilation
+    # Mass flow proportional to area and sqrt(height)
+    if isinstance(Q, torch.Tensor):
+        H_safe = max(H_w, 0.1)
+        m_dot = 0.5 * A_w * torch.sqrt(torch.tensor(H_safe))
+        return m_dot * torch.ones_like(Q)  # Broadcast to match Q shape
+    
+    elif isinstance(Q, np.ndarray):
+        H_safe = max(H_w, 0.1)
+        m_dot = 0.5 * A_w * np.sqrt(H_safe)
+        return m_dot * np.ones_like(Q)
+    
+    else:
+        H_safe = max(H_w, 0.1)
+        return 0.5 * A_w * np.sqrt(H_safe)
+
+
+def ventilation_factor(
+    A_w: float,
+    H_w: float,
+    room_area: float = 9.0
+) -> float:
+    """
+    Calculate ventilation factor for compartment fires.
+    
+    Ventilation factor = A_w * sqrt(H_w) / room_area
+    Higher values indicate better ventilation.
+    
+    Args:
+        A_w: Opening area (m²)
+        H_w: Opening height (m)
+        room_area: Floor area of room (m²)
+    
+    Returns:
+        Ventilation factor (dimensionless)
+    """
+    return (A_w * np.sqrt(max(H_w, 0.1))) / max(room_area, 1.0)
+
+
+def compute_enhanced_features(
+    hrr_sequence: np.ndarray,
+    fire_diameter: float = 0.3,
+    room_dims: dict = None
+) -> np.ndarray:
+    """
+    Compute enhanced physics features from HRR sequence.
+    
+    Combines multiple fire physics correlations:
+    1. Heskestad flame height
+    2. Flame height growth rate
+    3. Flame height deviation
+    4. McCaffrey plume region indicator
+    5. Window/ventilation flow factor
+    6. Buoyancy indicator (Q^(2/5))
+    
+    Args:
+        hrr_sequence: HRR time series [timesteps] in kW
+        fire_diameter: Fire diameter in meters
+        room_dims: Optional dict with 'opening_area', 'opening_height', 'room_area'
+    
+    Returns:
+        features: Array of shape [timesteps, 6] with all physics features
+    """
+    # Convert to convective HRR (70% of total)
+    Q_c = hrr_sequence * 0.7
+    
+    # Feature 1: Heskestad flame height
+    L_f = heskestad_flame_height(Q_c, D=fire_diameter)
+    
+    # Feature 2: Flame height growth rate (dL_f/dt)
+    dt = 0.1  # Sampling rate: 10 Hz
+    dL_f_dt = np.gradient(L_f, dt)
+    
+    # Feature 3: Deviation from mean (indicates fire phase)
+    L_f_mean = np.mean(L_f)
+    L_f_deviation = L_f - L_f_mean
+    
+    # Feature 4: McCaffrey plume region at mid-height (z = 1.2m)
+    z_measure = 1.2  # Typical measurement height
+    plume_region = mccaffrey_plume_region(hrr_sequence, z_measure)
+    
+    # Feature 5: Ventilation flow indicator (if room dims available)
+    if room_dims and 'opening_area' in room_dims:
+        vent_flow = thomas_window_flow(hrr_sequence, 
+                                       room_dims['opening_area'],
+                                       room_dims.get('opening_height', 1.0))
+        # Normalize by typical values (0-2 kg/s range)
+        vent_flow_norm = vent_flow / 2.0
+    else:
+        # Default: assume moderate ventilation
+        vent_flow_norm = np.ones_like(hrr_sequence) * 0.5
+    
+    # Feature 6: Buoyancy power indicator (Q^(2/5) - fundamental scaling)
+    buoyancy_power = np.power(np.maximum(hrr_sequence, 1e-6), 2/5)
+    # Normalize by typical value (100 kW -> ~6.3)
+    buoyancy_norm = buoyancy_power / 6.3
+    
+    # Stack all features
+    features = np.stack([
+        L_f,                # Flame height (m)
+        dL_f_dt,           # Flame growth rate (m/s)
+        L_f_deviation,     # Flame deviation (m)
+        plume_region,      # McCaffrey region (0-1)
+        vent_flow_norm,    # Ventilation flow (normalized)
+        buoyancy_norm      # Buoyancy power (normalized)
+    ], axis=1)
+    
+    return features.astype(np.float32)
+
+
 def compute_heskestad_features(
     hrr_sequence: np.ndarray,
     fire_diameter: float = 0.3
 ) -> np.ndarray:
     """
     Compute Heskestad-derived features from HRR sequence.
+    
+    LEGACY FUNCTION: Kept for backward compatibility.
+    For new models, use compute_enhanced_features() which includes
+    additional correlations (McCaffrey, ventilation).
     
     These features provide physics-informed context to the model:
     1. Expected flame height

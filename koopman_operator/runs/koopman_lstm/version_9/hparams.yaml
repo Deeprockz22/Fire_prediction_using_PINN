@@ -1,0 +1,15 @@
+alpha_linear: 0.03
+beta_recon: 0.02
+delta_mono: 0.005
+dropout: 0.1
+epsilon_spectral: 0.01
+fire_diameter: 0.3
+gamma_physics: 0.01
+hidden_dim: 256
+input_dim: 6
+koopman_dim: 256
+lr: 0.001
+num_layers: 2
+output_dim: 1
+pred_horizon: 10
+weight_decay: 1.0e-05

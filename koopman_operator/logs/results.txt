@@ -1,0 +1,35 @@
+C:\Users\manid\AppData\Roaming\Python\Python311\site-packages\lightning_fabric\utilities\cloud_io.py:73: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+Loading model...
+Loading data...
+[TRAIN] 68 scenarios -> 17748 samples  |  6 input channels
+[TEST] 14 scenarios -> 3654 samples  |  6 input channels
+Evaluating on 3654 test samples...
+
+=======================================================
+  TEST RESULTS
+=======================================================
+  Test MSE:  0.007251
+  Test MAE:  0.0617
+  Baseline MAE (old LSTM): ~4.85
+=======================================================
+
+=======================================================
+  KOOPMAN SPECTRAL ANALYSIS
+=======================================================
+  Matrix size: 64 x 64
+  Spectral radius: 1.0725
+  Stable (all |lam| <= 1): False
+-------------------------------------------------------
+    #     |lam|  angle(rad)          Re          Im  Type
+-------------------------------------------------------
+    1    1.0725      0.0000      1.0725      0.0000  GROWING
+    2    1.0617      0.0000      1.0617      0.0000  GROWING
+    3    1.0569      0.0315      1.0564      0.0333  GROWING+OSC
+    4    1.0569     -0.0315      1.0564     -0.0333  GROWING+OSC
+    5    1.0568     -0.0475      1.0556     -0.0502  GROWING+OSC
+    6    1.0568      0.0475      1.0556      0.0502  GROWING+OSC
+    7    1.0502      0.0000      1.0502      0.0000  GROWING
+    8    1.0471      0.0151      1.0469      0.0159  GROWING+OSC
+    9    1.0471     -0.0151      1.0469     -0.0159  GROWING+OSC
+   10    1.0442     -0.0443      1.0431     -0.0462  GROWING+OSC
+=======================================================

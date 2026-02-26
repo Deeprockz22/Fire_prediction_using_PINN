@@ -1,0 +1,680 @@
+
+// put rendered files in specified directory
+
+LABEL
+  put rendered files in specified directory
+
+RENDERDIR
+ ..\..\Manuals\SMV_User_Guide\SCRIPT_FIGURES
+
+
+// render 3D smoke
+
+LABEL
+  render 3D smoke
+
+UNLOADALL
+LOADINIFILE
+ thouse5_part.ini
+LOAD3DSMOKE
+ SOOT DENSITY
+LOAD3DSMOKE
+ HRRPUV
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_smoke_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_smoke_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_smoke_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_smoke_060
+
+// render slice files
+
+LABEL
+  render slice files
+
+UNLOADALL
+LOADSLCF
+ PBY=1.6 QUANTITY='TEMPERATURE'
+KEYBOARD
+ *
+KEYBOARD
+ y
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_slice_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_slice_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_slice_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_slice_060
+
+LABEL
+  render split slice files
+
+UNLOADALL
+LOADINIFILE
+ thouse5_split.ini
+LOADSLCF
+ PBY=1.6 QUANTITY='U-VELOCITY'
+KEYBOARD
+ *
+KEYBOARD
+ y
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_slicesplit_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_slicesplit_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_slicesplit_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_slicesplit_060
+
+// render general slices
+
+LABEL
+  render general slices
+
+UNLOADALL
+LOADINIFILE
+ thouse5_gslice.ini
+//GPUOFF
+LOADFILE
+ thouse5_4_15.sf
+LOADFILE
+ thouse5_3_19.sf
+LOADFILE
+ thouse5_2_15.sf
+LOADFILE
+ thouse5_1_19.sf
+
+SETTIMEVAL
+ 60.000000
+
+GSLICEVIEW
+ 1 0 0 0
+
+GSLICEPOS
+ 3.0 4.0 3.0
+GSLICEORIEN
+ 90.0 120.0
+RENDERONCE
+ thouse5_gslice1
+
+GSLICEPOS
+ 3.0 4.0 3.0
+GSLICEORIEN
+ 50.0 145.0
+RENDERONCE
+ thouse5_gslice2
+
+GSLICEPOS
+ 3.0 3.0 0.0
+GSLICEORIEN
+ 90.0 45.0
+RENDERONCE
+ thouse5_gslice3
+
+GSLICEPOS
+ 0.0 2.0 0.0
+GSLICEORIEN
+ 128.0 42.0
+RENDERONCE
+ thouse5_gslice4
+
+// render general vector slices
+
+LABEL
+  render general vector slices
+
+UNLOADALL
+LOADINIFILE
+ thouse5_gslice.ini
+LOADVFILE
+ thouse5_4_15.sf
+LOADVFILE
+ thouse5_3_19.sf
+LOADVFILE
+ thouse5_2_15.sf
+LOADVFILE
+ thouse5_1_19.sf
+
+SETTIMEVAL
+ 60.000000
+
+GSLICEVIEW
+ 1 0 0 0
+
+GSLICEPOS
+ 3.0 4.0 3.0
+GSLICEORIEN
+ 90.0 120.0
+RENDERONCE
+ thouse5_vgslice1
+
+GSLICEPOS
+ 3.0 4.0 3.0
+GSLICEORIEN
+ 50.0 145.0
+RENDERONCE
+ thouse5_vgslice2
+
+GSLICEPOS
+ 3.0 3.0 0.0
+GSLICEORIEN
+ 90.0 45.0
+RENDERONCE
+ thouse5_vgslice3
+
+GSLICEPOS
+ 0.0 2.0 0.0
+GSLICEORIEN
+ 128.0 42.0
+RENDERONCE
+ thouse5_vgslice4
+
+// render vector slice file
+
+LABEL
+  render vector slice file
+
+UNLOADALL
+LOADVSLICE
+ TEMPERATURE
+ 2 1.500000
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_vslice_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_vslice_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_vslice_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_vslice_060
+
+// render temperature isosurfaces
+
+LABEL
+  render temperature isosurfaces
+
+UNLOADALL
+LOADISO
+ TEMPERATURE: 30.0, 100.0
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_iso_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_iso_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_iso_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_iso_060
+
+// render temperature colored hrrpuv isosurfaces
+
+LABEL
+  render temperature colored hrrpuv isosurface
+
+UNLOADALL
+LOADISO
+ HRRPUV: 600.0
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_tiso_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_tiso_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_tiso_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_tiso_060
+
+// render boundary file (cell averaged)
+
+LABEL
+  render boundary file (cell averaged)
+
+UNLOADALL
+LOADBOUNDARY
+ WALL TEMPERATURE
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_bound_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_bound_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_bound_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_bound_060
+
+// render boundary file (cell centered)
+
+LABEL
+  render boundary file (cell centered)
+
+LOADBOUNDARY
+ WALL TEMPERATURE(cell centered)
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_bound_cell_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_bound_cell_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_bound_cell_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_bound_cell_060
+
+// render boundary file (cell averaged, truncated)
+
+LABEL
+  render boundary file (cell averaged, truncated)
+
+UNLOADALL
+LOADINIFILE
+ thouse5_bound_trunc.ini
+LOADBOUNDARY
+ WALL TEMPERATURE
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_bound_trunc_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_bound_trunc_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_bound_trunc_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_bound_trunc_060
+
+// render particles
+
+LABEL
+  render particles
+
+UNLOADALL
+LOADPARTICLES
+PARTCLASSCOLOR
+ Uniform color
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_part_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_part_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_part_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_part_060
+
+// render particles using streaks
+
+LABEL
+  render particles using streaks
+
+UNLOADALL
+LOADINIFILE
+ thouse5_streak.ini
+LOADPARTICLES
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_streak_010
+
+// render two left/right stereo images
+
+LABEL
+  render two left/right stereo images
+
+UNLOADALL
+LOADISO
+ TEMPERATURE: 30.0, 100.0
+LOADINIFILE
+ thouse5_lr_stereo.ini
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_lr_stereo
+
+// render two stereo images
+
+LABEL
+  render two stereo images
+
+LOADINIFILE
+ thouse5_rc_stereo.ini
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_iso_rc_stereo
+
+// render two stereo images
+
+LABEL
+  render two stereo images
+
+LOADINIFILE
+ thouse5_rb_stereo.ini
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_iso_rb_stereo
+
+// render 3D smoke with no clipping
+
+LABEL
+  render 3D smoke with no clipping
+
+UNLOADALL
+LOADINIFILE
+ thouse5.ini
+LOAD3DSMOKE
+ SOOT DENSITY
+LOAD3DSMOKE
+ HRRPUV
+SETTIMEVAL
+ 30.000000
+SETVIEWPOINT
+ external
+RENDERONCE
+ thouse5_smoke_noclip
+
+// render 3D smoke while clipping blockages (but not smoke)
+
+LABEL
+  render 3D smoke while clipping blockages (but not smoke)
+
+UNLOADALL
+LOAD3DSMOKE
+ SOOT DENSITY
+LOAD3DSMOKE
+ HRRPUV
+SETTIMEVAL
+ 30.000000
+SETVIEWPOINT
+ external
+SETCLIPMODE
+ 2
+SETCLIPX
+ 0 -0.0064 1 4.3438
+RENDERONCE
+ thouse5_smoke_clip_blockages
+
+// render 3D smoke, clipping blockages and smoke
+
+LABEL
+  render 3D smoke, clipping blockages and smoke
+
+UNLOADALL
+LOAD3DSMOKE
+ SOOT DENSITY
+LOAD3DSMOKE
+ HRRPUV
+SETTIMEVAL
+ 30.000000
+SETVIEWPOINT
+ external
+SETCLIPMODE
+ 1
+SETCLIPX
+ 0 -0.0064 1 4.3438
+RENDERONCE
+ thouse5_smoke_clip_blockages_data
+SETCLIPMODE
+ 0
+
+// render geometry with ticks
+
+LABEL
+  render geometry with ticks
+
+UNLOADALL
+LOADINIFILE
+ thouse5_ticks.ini
+SETVIEWPOINT
+ front
+RENDERONCE
+ thouse5_ticks
+
+UNLOADALL
+LOADINIFILE
+ thouse5_plot3d.ini
+LOADPLOT3D
+ 0 24.400000
+
+SHOWPLOT3DDATA
+ 1 1 1 0 5.866670
+SHOWPLOT3DDATA
+ 1 2 1 1 1.300000
+SHOWPLOT3DDATA
+ 1 3 1 0 2.400000
+SHOWPLOT3DDATA
+ 1 4 1 0 6
+PLOT3DPROPS
+ 1 0 4 1
+RENDERONCE
+ thouse5_plot3d_val
+
+SHOWPLOT3DDATA
+ 1 1 1 0 5.866670
+SHOWPLOT3DDATA
+ 1 2 1 1 1.300000
+SHOWPLOT3DDATA
+ 1 3 1 0 2.400000
+SHOWPLOT3DDATA
+ 1 4 1 0 6
+PLOT3DPROPS
+ 1 1 4 1
+RENDERONCE
+ thouse5_plot3d_vec
+
+SHOWPLOT3DDATA
+ 1 1 1 0 5.866670
+SHOWPLOT3DDATA
+ 1 2 1 0 4.000000
+SHOWPLOT3DDATA
+ 1 3 1 0 2.400000
+SHOWPLOT3DDATA
+ 1 4 1 1 5
+PLOT3DPROPS
+ 1 0 4 1
+RENDERONCE
+ thouse5_plot3d_iso1
+
+SHOWPLOT3DDATA
+ 1 1 1 0 5.866670
+SHOWPLOT3DDATA
+ 1 2 1 0 4.000000
+SHOWPLOT3DDATA
+ 1 3 1 0 2.400000
+SHOWPLOT3DDATA
+ 1 4 1 1 8
+PLOT3DPROPS
+ 1 0 4 1
+RENDERONCE
+ thouse5_plot3d_iso2
+
+// render fed iso file
+
+LABEL
+  render fed iso file
+
+UNLOADALL
+LOADINIFILE
+ thouse5.ini
+LOADISO
+ Fractional effective dose: 0.3, 1.0, 3.0
+SETVIEWPOINT
+ external
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_fed_iso_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_fed_iso_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_fed_iso_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_fed_iso_060
+LOADINIFILE
+ thouse5.ini
+
+ // render fed slice file
+
+LABEL
+  render fed slice file
+
+UNLOADALL
+LOADINIFILE
+ thouse5_fed.ini
+SCENECLIP
+ 1
+LOADSLCF
+ PBY=1.6 QUANTITY='Fractional effective dose'
+SETTIMEVAL
+ 5.0
+SETVIEWPOINT
+ upy
+RENDERONCE
+ thouse5_fed_z1p5_slice_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_fed_z1p5_slice_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_fed_z1p5_slice_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_fed_z1p5_slice_060
+
+// render chopped slice file (ceiling jet)
+
+LABEL
+  render chopped slice file (ceiling jet)
+
+UNLOADALL
+LOADINIFILE
+ thouse5_cjet.ini
+LOADSLCF
+ PBY=1.5 QUANTITY='TEMPERATURE'
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_cjet_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_cjet_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_cjet_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_cjet_060
+
+// render velocity devices
+
+LABEL
+  render velocity devices
+
+UNLOADALL
+LOADINIFILE
+ thouse5_device.ini
+LOADSLCF
+ PBX=5.87 QUANTITY='TEMPERATURE'
+SETTIMEVAL
+ 5.000000
+RENDERONCE
+ thouse5_device_005
+SETTIMEVAL
+ 10.000000
+RENDERONCE
+ thouse5_device_010
+SETTIMEVAL
+ 30.000000
+RENDERONCE
+ thouse5_device_030
+SETTIMEVAL
+ 60.000000
+RENDERONCE
+ thouse5_device_060

@@ -21,10 +21,21 @@ class FDSParser:
         Parse the .fds file for a given scenario.
         Returns a dictionary of extracted parameters.
         """
-        fds_path = self.scenarios_dir / scenario_name / f"{scenario_name}.fds"
+        # Check deployment structures first
+        base_name = scenario_name.replace('_hrr', '')
+        # Try both the original nested structure and the flat training_data/ structure
+        fds_path_nested = self.scenarios_dir / base_name / f"{base_name}.fds"
+        fds_path_flat = self.scenarios_dir.parent / "training_data" / f"{base_name}.fds"
+        fds_path_input = self.scenarios_dir.parent / "Input" / f"{base_name}.fds"
         
-        if not fds_path.exists():
-            logger.warning(f"FDS file not found: {fds_path}")
+        fds_path = None
+        for p in [fds_path_nested, fds_path_flat, fds_path_input]:
+            if p.exists():
+                fds_path = p
+                break
+                
+        if not fds_path:
+            logger.debug(f"FDS file not found for: {base_name}. Extracting physics visually from filename string instead...")
             return {}
             
         params = {}
@@ -61,3 +72,4 @@ class FDSParser:
             logger.error(f"Error parsing FDS file {fds_path}: {e}")
             
         return params
+

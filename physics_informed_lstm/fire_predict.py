@@ -55,8 +55,10 @@ def print_banner():
     print()
     for line in art:
         print("  " + line)
-    print(f"\n  \033[97mPhysics-Informed LSTM  ·  Fire Dynamics Forecasting  ·  v{VERSION}\033[0m")
-    print()
+    print(f"\n  \033[97mPhysics-Informed LSTM  ·  Predicting the Future of Fire v{VERSION}\033[0m")
+    print("  \033[90mBecause running CFD in real-time is for people who enjoy waiting.\033[0m\n")
+    print("  \033[93mThis AI has ingested the knowledge of 221 fires and 3 physics books.\033[0m")
+    print("  \033[93mIt is now mildly concerned about your smoking habits.\033[0m\n")
 
 def print_section(title):
     """Print section header with box-drawing glyphs"""
@@ -246,14 +248,14 @@ def setup_wizard():
     """Interactive setup wizard"""
     clear_screen()
     print_banner()
-    print_section("🔧 SETUP WIZARD")
+    print_section("🔧 INITIALIZATION PROTOCOL (A.K.A SETUP WIZARD)")
     
-    print("This wizard will:")
-    print("  ✓ Check your Python version")
-    print("  ✓ Install required packages")
-    print("  ✓ Verify installation")
-    print("  ✓ Create necessary folders")
-    print("  ✓ Run a test prediction\n")
+    print("Welcome, human. This sequence will:")
+    print("  ✓ Interrogate your Python runtime")
+    print("  ✓ Assimilate required dependencies via pip")
+    print("  ✓ Run diagnostics on the neural architecture")
+    print("  ✓ Synthesize necessary directory structures")
+    print("  ✓ Perform a nominal test firing\n")
     
     # Step 1: Check Python
     print_section("STEP 1: Checking Python Version")
@@ -302,11 +304,11 @@ def setup_wizard():
             print(f"\n⚠️  Test completed with warnings: {e}")
     
     # Done
-    print_section("🎉 SETUP COMPLETE!")
-    print("You're ready to use the tool!\n")
-    print("Next steps:")
+    print_section("🎉 INITIALIZATION COMPLETE")
+    print("All systems are nominal. You may now predict fire.\n")
+    print("Next commands for your meat-based interface:")
     print("  • Try: python fire_predict.py --example")
-    print("  • Or use the interactive menu\n")
+    print("  • Or engage the interactive terminal menu\n")
     
     return True
 
@@ -703,11 +705,11 @@ def generate_fds_file():
     import random
     from datetime import datetime
     
-    print_section("🎲 FDS FILE GENERATOR")
+    print_section("🎲 CHAOS GENERATOR (FDS CONFIG MAKER)")
     
-    print("This tool generates FDS input files with parameters within the")
-    print("training scope of the prediction model.")
-    print("\n💡 Note: Model performs best with scenarios producing HRR > 100 kW\n")
+    print("This tool conjures FDS input files using parameters that remain within the")
+    print("training manifold of the prediction model.")
+    print("\n💡 Note: The LSTM prefers its HRR > 100 kW. Try not to feed it a candle.\n")
     
     # Define parameter ranges from training data (calibrated for 100-280 kW HRR range)
     FUELS = {
@@ -726,10 +728,10 @@ def generate_fds_file():
     }
     
     # User choices or random
-    print("Choose generation mode:")
-    print("  1. 🎲 Fully Random (within training scope)")
-    print("  2. 🎯 Custom Parameters (guided)")
-    print("  3. 🔙 Back to main menu\n")
+    print("Select simulation entropy level:")
+    print("  1. 🎲 Roll the physics dice (Fully Random)")
+    print("  2. 🎯 Micro-manage the simulation (Custom Parameters)")
+    print("  3. 🔙 Retreat to safety (Main menu)\n")
     
     choice = input("Choose option [1/2/3]: ").strip()
     
@@ -917,15 +919,51 @@ def generate_fds_file():
         print(f"\n📝 File: {filename}")
         print(f"📊 Size: {len(fds_content)} bytes")
         
-        print("\n💡 Next steps:")
-        print("   1. Run this FDS file in Fire Dynamics Simulator")
-        print("   2. Wait for simulation to complete (~2-5 minutes)")
-        print("   3. Extract the *_hrr.csv output file")
-        print("   4. Use this tool to predict HRR trends!")
-        
-        print("\n🎯 To run FDS simulation:")
-        print(f"   cd Input")
-        print(f"   fds {filename}")
+        # Auto-run feature
+        print("\n🚀 Ready to ignite the simulation engine?")
+        run_now = input("Invoke FDS6_local.bat right now? [Y/n]: ").strip().lower()
+        if not run_now or run_now == 'y':
+            fds_exe = SCRIPT_DIR / "FDS6" / "bin" / "fds_local.bat"
+            if fds_exe.exists():
+                print(f"\n🔥 Injecting parameters into FDS: {filename}")
+                print("   (Grab some coffee. We're solving Navier-Stokes in the background...)\n")
+                print("-" * 70)
+                try:
+                    subprocess.run([str(fds_exe), filename], cwd=str(output_dir), check=True)
+                    print("-" * 70)
+                    print(f"\n✅ Reality simulated successfully!")
+                    print(f"📁 Fluid dynamics securely quarantined in: {output_dir}")
+                    csv_name = filename.replace('.fds', '_hrr.csv')
+                    if (output_dir / csv_name).exists():
+                        print(f"📈 Telemetry acquired: {csv_name}")
+                        print("\n🧹 Executing cleanup protocol (deleting useless non-HRR output files)...")
+                        
+                        file_prefix = filename.replace('.fds', '')
+                        deleted_count = 0
+                        
+                        for ext_file in output_dir.glob(f"{file_prefix}*"):
+                            # Keep only the original .fds and the _hrr.csv
+                            if ext_file.name != filename and ext_file.name != csv_name:
+                                try:
+                                    ext_file.unlink()
+                                    deleted_count += 1
+                                except Exception as cleanup_err:
+                                    pass
+                        print(f"   Vaporized {deleted_count} unnecessary files.")
+                        print("\n💡 The timeline is ready for prediction!")
+                except subprocess.CalledProcessError as e:
+                    print("-" * 70)
+                    print(f"\n❌ FDS crashed. Return code: {e.returncode}. Maybe check your grid size?")
+                except Exception as e:
+                    print("-" * 70)
+                    print(f"\n❌ The simulation experienced a highly improbable anomaly: {e}")
+            else:
+                print(f"\n❌ FDS executable missing from: {fds_exe}")
+                print("   Cannot warp space-time without it.")
+        else:
+            print("\n💡 Suit yourself. Run it manually later:")
+            print(f"   cd Input")
+            print(f"   ..\\FDS6\\bin\\fds_local.bat {filename}")
         
     except Exception as e:
         print(f"\n❌ Error saving file: {e}")
@@ -1006,15 +1044,15 @@ def show_main_menu():
     print("│" + "  MAIN MENU".ljust(w - 2) + "│")
     print("├" + bar + "┤")
     items = [
-        ("1", "🎯", "Quick Predict",    "enter file path, get prediction"),
-        ("2", "📚", "Run Example",      "see it work with sample data"),
-        ("3", "📦", "Batch Process",    "all CSVs in Input/ → Output/"),
-        ("4", "�", "Generate FDS File","create random test scenarios"),
-        ("5", "🔄", "Sync Scenarios",   "add new FDS scenarios to training"),
-        ("6", "🧠", "Train Model",      "retrain on updated dataset"),
-        ("7", "📁", "Manage Files",     "list, open, clean folders"),
-        ("8", "🔧", "Setup & Diagnostics", "install, verify, troubleshoot"),
-        ("9", "❓", "Help & Information","guides, FAQ, tips"),
+        ("1", "🎯", "Look into the Matrix", "Provide a CSV, get a prediction"),
+        ("2", "📚", "Run Example",          "Because reading documentation is hard"),
+        ("3", "📦", "Batch Process",        "Crunch all CSVs in Input/ to Output/"),
+        ("4", "🎲", "Generate FDS File",    "Spawn random fire scenarios"),
+        ("5", "🔄", "Assimilate Scenarios", "Feed new FDS data to the training pool"),
+        ("6", "🧠", "Train Model",          "Adjust LSTM weights (takes a while)"),
+        ("7", "📁", "Manage Files",         "Delete things you'll regret later"),
+        ("8", "🔧", "Run Diagnostics",      "Blame the system, not the code"),
+        ("9", "❓", "Help & Lore",          "Useful tips to survive combustion"),
     ]
     for num, icon, name, desc in items:
         line = f"  {num}.  {icon}  {name:<22} {desc}"
@@ -1373,6 +1411,15 @@ def train_model_interactive():
     else:
         print(f"✅ Found {len(csv_files)} training files\n")
     
+    # Default hyperparameters
+    config = {
+        'epochs': 50,
+        'batch_size': 32,
+        'hidden_dim': 128,
+        'num_layers': 2,
+        'learning_rate': 0.001
+    }
+    
     print("Training Configuration:")
     print("  • Architecture: Physics-Informed LSTM")
     print("  • Input features: 9 (3 original + 6 physics correlations)")
@@ -1381,12 +1428,39 @@ def train_model_interactive():
     print("    - McCaffrey: Plume region classification")
     print("    - Thomas: Ventilation flow factor")
     print("    - Buoyancy power scaling")
-    print("  • Epochs: 50 (with early stopping)")
-    print("  • Batch size: 32")
+    print(f"  • Epochs: {config['epochs']} (with early stopping)")
+    print(f"  • Batch size: {config['batch_size']}")
     print("  • Sequence length: 30 steps")
     print("  • Prediction horizon: 10 steps\n")
     
-    response = input("Continue with training? [y/N]: ").strip().lower()
+    print("🤖 Would you like to mathematically optimize these hyper-parameters?")
+    tweak = input("Tweak model settings? [y/N]: ").strip().lower()
+    
+    if tweak == 'y':
+        print("\n🔧 HYPERPARAMETER TERMINAL")
+        print("Press Enter to keep the default value.\n")
+        
+        try:
+            ep = input(f"Epochs [{config['epochs']}]: ").strip()
+            if ep: config['epochs'] = int(ep)
+            
+            bs = input(f"Batch Size [{config['batch_size']}]: ").strip()
+            if bs: config['batch_size'] = int(bs)
+            
+            hd = input(f"Hidden Dimensions [{config['hidden_dim']}]: ").strip()
+            if hd: config['hidden_dim'] = int(hd)
+            
+            nl = input(f"LSTM Layers [{config['num_layers']}]: ").strip()
+            if nl: config['num_layers'] = int(nl)
+            
+            lr = input(f"Learning Rate [{config['learning_rate']}]: ").strip()
+            if lr: config['learning_rate'] = float(lr)
+            
+            print("\n✅ Matrix parameters re-aligned successfully.\n")
+        except ValueError:
+            print("\n❌ Invalid input detected. Reverting to safe default parameters.\n")
+    
+    response = input("Continue with training using these settings? [y/N]: ").strip().lower()
     
     if response != 'y':
         print("\nTraining cancelled.\n")
@@ -1412,8 +1486,8 @@ def train_model_interactive():
         # Configuration
         INPUT_SEQ_LEN = 30
         PRED_HORIZON = 10
-        BATCH_SIZE = 32
-        MAX_EPOCHS = 50
+        BATCH_SIZE = config['batch_size']
+        MAX_EPOCHS = config['epochs']
         
         print("✅ Modules loaded\n")
         
@@ -1515,11 +1589,11 @@ def train_model_interactive():
         print("🧠 Initializing model with enhanced physics correlations...")
         model = PhysicsInformedLSTM(
             input_dim=9,  # 3 original + 6 physics features
-            hidden_dim=128,
-            num_layers=2,
+            hidden_dim=config['hidden_dim'],
+            num_layers=config['num_layers'],
             output_dim=1,
             dropout=0.1,
-            lr=0.001,
+            lr=config['learning_rate'],
             pred_horizon=PRED_HORIZON,
             use_physics_loss=True,
             lambda_physics=0.1,
@@ -1954,3 +2028,8 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+
+
+

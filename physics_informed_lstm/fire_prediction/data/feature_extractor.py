@@ -23,7 +23,14 @@ class StaticFeatureExtractor:
     FUELS = ['N-HEPTANE', 'PROPANE', 'METHANE', 'ACETONE', 'ETHANOL', 'DIESEL']
     ROOMS = ['small', 'medium', 'large']
     
-    def __init__(self, data_dir: str = r"D:\FDS\Small_project\fds_scenarios"):
+    def __init__(self, data_dir: str = None):
+        if data_dir is None:
+            # Resolve relative to the script's location
+            import os
+            from pathlib import Path
+            script_dir = Path(__file__).parent.parent.parent
+            data_dir = str(script_dir / "fds_scenarios")
+        
         self.num_fuels = len(self.FUELS)
         self.num_rooms = len(self.ROOMS)
         self.output_dim = self.num_fuels + self.num_rooms + 3
@@ -130,3 +137,4 @@ if __name__ == "__main__":
     print(f"Features for {name}:")
     print(feat)
     print(f"Shape: {feat.shape}")
+

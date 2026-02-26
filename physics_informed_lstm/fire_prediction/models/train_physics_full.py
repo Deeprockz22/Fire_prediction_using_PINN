@@ -39,10 +39,10 @@ PRED_HORIZON = 10
 BATCH_SIZE = 32
 
 # Model Configuration
-HIDDEN_DIM = 128
+HIDDEN_DIM = 256
 NUM_LAYERS = 2
 DROPOUT = 0.1
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 
 # Physics Configuration
 FIRE_DIAMETER = 0.3  # meters
@@ -51,7 +51,7 @@ LAMBDA_MONOTONIC = 0.05  # Weight for monotonicity loss
 
 # Training Configuration
 MAX_EPOCHS = 50
-PATIENCE = 10  # Early stopping patience
+PATIENCE = 50  # Early stopping patience
 NUM_WORKERS = 0  # Set to 0 for Windows compatibility
 
 # Experiment Configuration

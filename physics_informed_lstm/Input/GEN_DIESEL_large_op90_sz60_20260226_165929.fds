@@ -1,0 +1,47 @@
+&HEAD CHID='GEN_DIESEL_large_20260226_165929', TITLE='Generated Fire Scenario - Calibrated for Training Range' /
+
+&MESH IJK=36,36,21, XB=-2.0,2.0,-2.0,2.0,0.0,2.4 /
+
+&TIME T_END=30.0 /
+
+&REAC FUEL='DIESEL', FORMULA='C12H23', SOOT_YIELD=0.059 /
+
+&SURF ID='FIRE_SOURCE', HRRPUA=1000.0, COLOR='ORANGE RED' /
+
+! Fire source (burner) - Area: 0.1890 m², Expected peak HRR: ~189.0 kW
+&OBST XB=-0.21737065119284157,0.21737065119284157,-0.21737065119284157,0.21737065119284157,0.0,0.05, SURF_ID='FIRE_SOURCE' /
+
+! Room walls (5cm thick) - XMIN wall with door opening
+! Left side of door
+&OBST XB=-2.05,-2.0,-2.0,-0.405,0.0,2.4, COLOR='GRAY 80' / XMIN wall - left
+! Right side of door
+&OBST XB=-2.05,-2.0,0.405,2.0,0.0,2.4, COLOR='GRAY 80' / XMIN wall - right
+! Above door
+&OBST XB=-2.05,-2.0,-0.405,0.405,1.0,2.4, COLOR='GRAY 80' / XMIN wall - above door
+
+! Other walls
+&OBST XB=2.0,2.05,-2.0,2.0,0.0,2.4, COLOR='GRAY 80' / XMAX wall
+&OBST XB=-2.0,2.0,-2.05,-2.0,0.0,2.4, COLOR='GRAY 80' / YMIN wall
+&OBST XB=-2.0,2.0,2.0,2.05,0.0,2.4, COLOR='GRAY 80' / YMAX wall
+
+&VENT MB='XMIN', SURF_ID='OPEN' /
+&VENT MB='XMAX', SURF_ID='OPEN' /
+&VENT MB='YMIN', SURF_ID='OPEN' /
+&VENT MB='YMAX', SURF_ID='OPEN' /
+&VENT MB='ZMAX', SURF_ID='OPEN' /
+
+! Slice files for visualization and ML training
+&SLCF PBX=0.0, QUANTITY='TEMPERATURE', VECTOR=.TRUE. /
+&SLCF PBY=0.0, QUANTITY='TEMPERATURE', VECTOR=.TRUE. /
+&SLCF PBZ=1.2, QUANTITY='TEMPERATURE' /
+&SLCF PBY=0.0, QUANTITY='HRRPUV' /
+&SLCF PBY=0.0, QUANTITY='VELOCITY', VECTOR=.TRUE. /
+&SLCF PBX=0.0, QUANTITY='HRRPUV' /
+
+! Output control
+&DUMP DT_SLCF=0.25, DT_HRR=0.1 /
+
+! Devices for monitoring
+&DEVC ID='TEMP_CENTER', QUANTITY='TEMPERATURE', XYZ=0,0,1.2 /
+
+&TAIL /

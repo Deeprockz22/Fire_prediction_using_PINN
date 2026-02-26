@@ -1,0 +1,33 @@
+RENDERDIR
+ ..\..\Manuals\SMV_Verification_Guide\SCRIPT_FIGURES
+// LOADFILE
+//  colorbar_01.sf
+LOADSLCF
+ QUANTITY='TEMPERATURE' PBY=0.6
+LOADINIFILE
+ colorbar_low.ini
+SETVIEWPOINT
+ view 1
+SETTIMEVAL
+ 9.961175
+RENDERONCE
+ colorbar_low
+
+LOADINIFILE
+ colorbar_med.ini
+SETVIEWPOINT
+ view 1
+SETTIMEVAL
+ 9.961175
+RENDERONCE
+ colorbar_med
+
+LOADINIFILE
+ colorbar_high.ini
+SETTIMEVAL
+ 9.961175
+SETVIEWPOINT
+ view 1
+RENDERONCE
+ colorbar_high
+

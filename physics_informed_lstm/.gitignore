@@ -74,3 +74,8 @@ desktop.ini
 
 # Optional: Uncomment if you don't want to track training data (large files)
 # training_data/*.csv
+
+# FDS6 large binaries (>100 MB)
+FDS6/bin/*.exe
+FDS6/Documentation/**/*.pdf
+

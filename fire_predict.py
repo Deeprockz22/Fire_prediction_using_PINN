@@ -42,17 +42,31 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def print_banner():
-    """Print welcome banner"""
-    print("\n" + "="*70)
-    print("🔥 FIRE HRR PREDICTION TOOL v{}".format(VERSION))
-    print("   Physics-Informed LSTM for Fire Dynamics Forecasting")
-    print("="*70 + "\n")
+    """Print welcome banner with HESKESTAD ASCII block art"""
+    _A = "\033[91m"; _B = "\033[93m"; _C = "\033[33m"; _RST = "\033[0m"
+    art = [
+        f"{_A}██╗  ██╗███████╗███████╗██╗  ██╗███████╗███████╗████████╗ █████╗ ██████╗ {_RST}",
+        f"{_A}██║  ██║██╔════╝██╔════╝██║ ██╔╝██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔══██╗{_RST}",
+        f"{_B}███████║█████╗  ███████╗█████╔╝ █████╗  ███████╗   ██║   ███████║██║  ██║{_RST}",
+        f"{_B}██╔══██║██╔══╝  ╚════██║██╔═██╗ ██╔══╝  ╚════██║   ██║   ██╔══██║██║  ██║{_RST}",
+        f"{_C}██║  ██║███████╗███████║██║  ██╗███████╗███████║   ██║   ██║  ██║██████╔╝{_RST}",
+        f"{_C}╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═════╝ {_RST}",
+    ]
+    print()
+    for line in art:
+        print("  " + line)
+    print(f"\n  \033[97mPhysics-Informed LSTM  ·  Fire Dynamics Forecasting  ·  v{VERSION}\033[0m")
+    print()
 
 def print_section(title):
-    """Print section header"""
-    print("\n" + "-"*70)
-    print(title)
-    print("-"*70 + "\n")
+    """Print section header with box-drawing glyphs"""
+    w = 70
+    bar = "─" * (w - 2)
+    print()
+    print("┌" + bar + "┐")
+    print("│  " + title.ljust(w - 4) + "│")
+    print("└" + bar + "┘")
+    print()
 
 def press_enter():
     """Wait for user input"""
@@ -60,6 +74,71 @@ def press_enter():
         input("\nPress Enter to continue...")
     except:
         pass
+
+# ── ANSI colours & fire animation ─────────────────────────────────────────────
+_R  = "\033[31m";  _Y  = "\033[33m"
+_RB = "\033[91m";  _YB = "\033[93m";  _RST = "\033[0m"
+
+_FRAMES = [
+    [
+        f"     {_RB}  ) {_Y} ({_RB}  ){_RST}   ",
+        f"    {_Y} ( {_RB}){_Y}  (  {_RB}( {_RST}  ",
+        f"   {_RB}){_Y}(   {_RB}) {_Y}( {_RB})  {_RST} ",
+        f"  {_Y}(  {_RB})   {_Y}(   {_RB})  {_RST} ",
+        f" {_R}  \\{_RB}|{_Y}///{_RB}|{_Y}///{_R}|/{_RST}",
+        f" {_R}   \\{_RB}|{_R}/////|{_RB}\\{_R}/{_RST} ",
+        f"  {_R}   \\{_RB}|||{_R}///{_RST}    ",
+        f"   {_R}   \\{_RB}|{_R}/ {_RST}      ",
+        f"    {_R}───┴───{_RST}    ",
+    ],
+    [
+        f"     {_Y}(  {_RB}) {_Y}  ({_RB}){_RST}  ",
+        f"    {_RB}){_Y}  ({_RB})  {_Y}(  {_RST} ",
+        f"   {_Y}( {_RB}) {_Y}(  {_RB})  {_Y}({_RST} ",
+        f"  {_RB})  {_Y}(   {_RB})  {_Y}(  {_RST}",
+        f" {_R}  \\{_Y}|{_RB}\\\\\\{_Y}|{_RB}\\\\\\{_R}|/{_RST}",
+        f" {_R}   \\{_Y}|{_R}/////|{_Y}\\{_R}/{_RST} ",
+        f"  {_R}   \\{_Y}|||{_R}///{_RST}    ",
+        f"   {_R}   \\{_Y}|{_R}/ {_RST}      ",
+        f"    {_R}───┴───{_RST}    ",
+    ],
+    [
+        f"    {_RB} ( {_Y}){_RB}  ( {_Y}) {_RST}  ",
+        f"   {_Y} ){_RB}(  {_Y}) {_RB} ( {_Y}) {_RST}",
+        f"   {_RB}( {_Y})  {_RB}(  {_Y}){_RB}( {_RST} ",
+        f"  {_Y})  {_RB})   {_Y}(   {_RB})  {_RST}",
+        f" {_R}  \\{_RB}|{_R}\\\\\\{_RB}|{_R}\\\\\\{_RB}|/{_RST}",
+        f" {_R}   \\{_RB}|{_R}/////|{_Y}\\{_R}/{_RST} ",
+        f"  {_R}   \\{_RB}|||{_R}///{_RST}    ",
+        f"   {_R}   \\{_RB}|{_R}/ {_RST}      ",
+        f"    {_R}───┴───{_RST}    ",
+    ],
+]
+
+def fire_splash():
+    """Play a brief animated ASCII fire, then clear."""
+    import time
+    try:
+        sys.stdout.write("\033[?25l")   # hide cursor
+        sys.stdout.flush()
+        clear_screen()
+        n = len(_FRAMES[0])
+        first = True
+        for _ in range(6):              # ~1.5 s
+            for frame in _FRAMES:
+                if not first:
+                    sys.stdout.write(f"\033[{n}A")
+                for line in frame:
+                    print(line)
+                sys.stdout.flush()
+                time.sleep(0.10)
+                first = False
+    except Exception:
+        pass
+    finally:
+        sys.stdout.write("\033[?25h")  # restore cursor
+        sys.stdout.flush()
+    clear_screen()
 
 # ============================================================================
 # SYSTEM CHECK & SETUP
@@ -108,7 +187,7 @@ def install_dependencies():
     try:
         subprocess.check_call([
             sys.executable, "-m", "pip", "install", "-r", 
-            str(SCRIPT_DIR / "requirements.txt"), "--quiet"
+            str(SCRIPT_DIR / "config" / "requirements.txt"), "--quiet"
         ], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         print("✅ All dependencies installed successfully!\n")
         return True
@@ -920,18 +999,30 @@ def open_folder(folder_name):
 # ============================================================================
 
 def show_main_menu():
-    """Display main menu"""
     print_banner()
-    print("MAIN MENU\n")
-    print("  1. 🎯 Quick Predict (enter file path)")
-    print("  2. 📚 Run Example (see it work!)")
-    print("  3. 📦 Batch Process (Input folder)")
-    print("  4. 🎲 Generate FDS File (random scenarios)")
-    print("  5. 🧠 Train Model (advanced)")
-    print("  6. 📁 Manage Files")
-    print("  7. 🔧 Setup & Diagnostics")
-    print("  8. ❓ Help & Information")
-    print("  9. 🚪 Exit\n")
+    w = 70
+    bar = "─" * (w - 2)
+    print("┌" + bar + "┐")
+    print("│" + "  MAIN MENU".ljust(w - 2) + "│")
+    print("├" + bar + "┤")
+    items = [
+        ("1", "🎯", "Quick Predict",    "enter file path, get prediction"),
+        ("2", "📚", "Run Example",      "see it work with sample data"),
+        ("3", "📦", "Batch Process",    "all CSVs in Input/ → Output/"),
+        ("4", "�", "Generate FDS File","create random test scenarios"),
+        ("5", "🔄", "Sync Scenarios",   "add new FDS scenarios to training"),
+        ("6", "🧠", "Train Model",      "retrain on updated dataset"),
+        ("7", "📁", "Manage Files",     "list, open, clean folders"),
+        ("8", "🔧", "Setup & Diagnostics", "install, verify, troubleshoot"),
+        ("9", "❓", "Help & Information","guides, FAQ, tips"),
+    ]
+    for num, icon, name, desc in items:
+        line = f"  {num}.  {icon}  {name:<22} {desc}"
+        print("│" + line.ljust(w - 2) + "│")
+    print("├" + bar + "┤")
+    print("│" + "  0.  🚪  Exit".ljust(w - 2) + "│")
+    print("└" + bar + "┘")
+    print()
 
 def show_file_management_menu():
     """File management submenu"""
@@ -1521,6 +1612,109 @@ def train_model_interactive():
         print("   • CUDA/GPU drivers (if using GPU)\n")
 
 # ============================================================================
+# SYNC FROM FDS_SCENARIOS
+# ============================================================================
+
+def sync_from_fds_scenarios():
+    """Sync training_data/ from fds_scenarios/ and rebuild ml_dataset.json"""
+    import json
+    import shutil
+    import numpy as np
+    import pandas as pd
+
+    FDS_DIR      = Path(r"D:\FDS\Small_project\fds_scenarios")
+    TRAINING_DIR = SCRIPT_DIR / "training_data"
+    DT           = 0.1
+
+    print_section("🔄 SYNC FROM FDS_SCENARIOS")
+
+    if not FDS_DIR.exists():
+        print(f"❌ fds_scenarios/ not found at {FDS_DIR}")
+        print("   Check that the path is correct in fire_predict.py")
+        return
+
+    TRAINING_DIR.mkdir(parents=True, exist_ok=True)
+
+    scenario_dirs = sorted([d for d in FDS_DIR.iterdir() if d.is_dir()])
+    print(f"Found {len(scenario_dirs)} scenario folders in fds_scenarios/\n")
+
+    def safe_col(df, *names):
+        for nm in names:
+            if nm in df.columns: return df[nm].values
+            m = [c for c in df.columns if nm.lower() in c.lower()]
+            if m: return df[m[0]].values
+        return None
+
+    copied, skipped, ml_records = 0, 0, []
+
+    for d in scenario_dirs:
+        name     = d.name
+        hrr_src  = d / f"{name}_hrr.csv"
+        devc_src = d / f"{name}_devc.csv"
+
+        if not hrr_src.exists():
+            skipped += 1
+            continue
+
+        try:
+            shutil.copy2(hrr_src, TRAINING_DIR / hrr_src.name)
+            if devc_src.exists():
+                shutil.copy2(devc_src, TRAINING_DIR / devc_src.name)
+
+            raw  = pd.read_csv(hrr_src, skiprows=1)
+            t    = raw.iloc[:, 0].values.astype(float)
+            h    = raw.iloc[:, 1].values.astype(float)
+            ok   = np.isfinite(t) & np.isfinite(h)
+            t, h = t[ok], h[ok]
+            if len(t) < 10: skipped += 1; continue
+
+            t_end = float(t[-1])
+            ct    = np.linspace(0.0, t_end, max(int(round(t_end/DT))+1, 10))
+            hi    = np.interp(ct, t, h)
+
+            mlr_i = qr_i = [0.0]*len(ct)
+            if devc_src.exists():
+                try:
+                    dv = pd.read_csv(devc_src, skiprows=1)
+                    dt_ = dv.iloc[:, 0].values.astype(float)
+                    tr  = dt_ <= t_end
+                    def _ic(*ns):
+                        col = safe_col(dv, *ns)
+                        if col is None: return None
+                        cv = col[tr].astype(float); ct2 = dt_[tr]
+                        v  = np.isfinite(cv)&np.isfinite(ct2)
+                        return np.interp(ct, ct2[v], cv[v]).tolist() if v.sum()>1 else None
+                    mlr_i = _ic("MLR","Mass Loss Rate","MLR_TOTAL") or mlr_i
+                    qr_i  = _ic("Q_RADI","QRADI","RADIATIVE_FLUX") or qr_i
+                except Exception: pass
+
+            ml_records.append({
+                "scenario": name, "peak_hrr": float(hi.max()),
+                "time_to_peak": float(ct[hi.argmax()]), "duration": t_end,
+                "hrr_series": hi.tolist(), "q_radi_series": qr_i, "mlr_series": mlr_i
+            })
+            copied += 1
+            print(f"  ✅ {name}")
+
+        except Exception as e:
+            print(f"  ⚠️  {name}: {e}")
+            skipped += 1
+
+    # Write ml_dataset.json
+    ml_path = TRAINING_DIR / "ml_dataset.json"
+    with open(ml_path, "w") as f:
+        json.dump({"n_scenarios": len(ml_records), "dt": DT,
+                   "scenarios": ml_records}, f, indent=2)
+
+    print("\n" + "="*70)
+    print("✅ SYNC COMPLETE")
+    print("="*70)
+    print(f"  Scenarios synced  : {copied}")
+    print(f"  Scenarios skipped : {skipped}  (no _hrr.csv)")
+    print(f"  ml_dataset.json   : {len(ml_records)} scenarios  →  {ml_path}")
+    print("\n💡 Now use Option 6 (Train Model) to retrain on the updated data.")
+
+# ============================================================================
 # MAIN INTERACTIVE INTERFACE
 # ============================================================================
 
@@ -1550,11 +1744,12 @@ def interactive_mode():
             press_enter()
     
     # Main menu loop
+    fire_splash()
     while True:
         clear_screen()
         show_main_menu()
         
-        choice = input("Choose option (1-9): ").strip()
+        choice = input("Choose option (1-9, 0 to exit): ").strip()
         
         if choice == '1':
             # Quick predict
@@ -1601,32 +1796,39 @@ def interactive_mode():
             press_enter()
         
         elif choice == '5':
+            # Sync from fds_scenarios
+            clear_screen()
+            print_banner()
+            sync_from_fds_scenarios()
+            press_enter()
+        
+        elif choice == '6':
             # Train model
             clear_screen()
             print_banner()
             train_model_interactive()
             press_enter()
         
-        elif choice == '6':
+        elif choice == '7':
             # File management
             show_file_management_menu()
         
-        elif choice == '7':
+        elif choice == '8':
             # Setup & diagnostics
             show_setup_menu()
         
-        elif choice == '8':
+        elif choice == '9':
             # Help
             show_help_menu()
         
-        elif choice == '9':
+        elif choice == '0':
             # Exit
             clear_screen()
             print("\n👋 Thanks for using Fire Prediction Tool!\n")
             return 0
         
         else:
-            print("\n❌ Invalid option. Please choose 1-9.")
+            print("\n❌ Invalid option. Please choose 1-9 or 0 to exit.")
             press_enter()
 
 # ============================================================================

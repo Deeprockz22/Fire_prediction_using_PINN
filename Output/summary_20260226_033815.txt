@@ -1,0 +1,19 @@
+======================================================================
+FIRE PREDICTION BATCH SUMMARY
+======================================================================
+
+BLIND_v2_PROPANE_Medium_Op62_hrr.csv
+  MAE: 169.8204 kW
+  Error: 28.84%
+  Peak: 588.74 kW
+
+GEN_METHANE_large_20260218_181435_devc.csv
+  MAE: 854.5081 kW
+  Error: 75.74%
+  Peak: 1128.27 kW
+
+GEN_METHANE_large_20260218_181435_hrr.csv
+  MAE: 25.5227 kW
+  Error: 10.13%
+  Peak: 252.04 kW
+

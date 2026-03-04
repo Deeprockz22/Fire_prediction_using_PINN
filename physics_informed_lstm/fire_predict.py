@@ -338,19 +338,22 @@ def load_prediction_model():
     else:
         state_dict = checkpoint
     
-    # Detect input dimension from first layer
+    # Detect input dimension and hidden dimension from first layer
     input_dim = 6  # Default
+    hidden_dim = 128  # Default
     for key in state_dict.keys():
         if 'lstm.weight_ih_l0' in key:
             # LSTM input weight shape: [4*hidden_dim, input_dim]
             input_dim = state_dict[key].shape[1]
+            hidden_dim = state_dict[key].shape[0] // 4
             break
     
     print(f"   📊 Detected model input dimension: {input_dim}")
+    print(f"   📊 Detected model hidden dimension: {hidden_dim}")
     
     model = PhysicsInformedLSTM(
         input_dim=input_dim,
-        hidden_dim=128,
+        hidden_dim=hidden_dim,
         num_layers=2,
         output_dim=1,
         dropout=0.1,
@@ -591,10 +594,10 @@ def run_batch_predictions():
     output_dir.mkdir(exist_ok=True)
     
     # Find files
-    csv_files = list(input_dir.glob("*.csv"))
+    csv_files = list(input_dir.glob("*_hrr.csv"))
     
     if not csv_files:
-        print(f"❌ No CSV files found in Input/ folder")
+        print(f"❌ No HRR CSV files found in Input/ folder")
         print(f"\n💡 Usage:")
         print(f"   1. Copy your FDS *_hrr.csv files to: {input_dir}")
         print(f"   2. Run batch processing again")
@@ -727,6 +730,45 @@ def generate_fds_file():
         'large': {'half_x': 2.0, 'half_y': 2.0, 'z': 2.4}      # 4x4x2.4m
     }
     
+    WALL_MATERIALS = {
+        'CONCRETE': {
+            'name': 'Concrete',
+            'conductivity': 1.8,      # W/m·K
+            'specific_heat': 1.04,    # kJ/kg·K
+            'density': 2300,          # kg/m³
+            'emissivity': 0.9,
+            'thickness': 0.15,        # m
+            'color': 'GRAY 80'
+        },
+        'GYPSUM': {
+            'name': 'Gypsum Board',
+            'conductivity': 0.48,     # W/m·K
+            'specific_heat': 1.09,    # kJ/kg·K
+            'density': 930,           # kg/m³
+            'emissivity': 0.9,
+            'thickness': 0.0125,      # m (1/2 inch)
+            'color': 'ANTIQUE WHITE'
+        },
+        'BRICK': {
+            'name': 'Brick Masonry',
+            'conductivity': 0.69,     # W/m·K
+            'specific_heat': 0.84,    # kJ/kg·K
+            'density': 1920,          # kg/m³
+            'emissivity': 0.9,
+            'thickness': 0.10,        # m
+            'color': 'FIREBRICK'
+        },
+        'WOOD': {
+            'name': 'Wood Panel',
+            'conductivity': 0.14,     # W/m·K
+            'specific_heat': 2.85,    # kJ/kg·K
+            'density': 510,           # kg/m³
+            'emissivity': 0.9,
+            'thickness': 0.02,        # m
+            'color': 'WOOD'
+        }
+    }
+    
     # User choices or random
     print("Select simulation entropy level:")
     print("  1. 🎲 Roll the physics dice (Fully Random)")
@@ -742,6 +784,7 @@ def generate_fds_file():
         # Fully random
         fuel = random.choice(list(FUELS.keys()))
         room_size = random.choice(list(ROOM_SIZES.keys()))
+        wall_material = random.choice(list(WALL_MATERIALS.keys()))
         opening = random.randint(20, 80)  # Moderate ventilation
         fire_size = random.randint(30, 60)  # Optimized for ~100-250 kW
         mesh_size = round(random.uniform(0.09, 0.13), 2)
@@ -769,6 +812,15 @@ def generate_fds_file():
         room_choice = input("\nChoose room [1-3 or Enter for random]: ").strip()
         room_sizes_list = list(ROOM_SIZES.keys())
         room_size = room_sizes_list[int(room_choice)-1] if room_choice.isdigit() else random.choice(room_sizes_list)
+        
+        # Wall material
+        print("\nWall materials:")
+        mat_list = list(WALL_MATERIALS.keys())
+        for i, mat in enumerate(mat_list, 1):
+            mat_info = WALL_MATERIALS[mat]
+            print(f"  {i}. {mat_info['name']} (k={mat_info['conductivity']} W/m·K, ρ={mat_info['density']} kg/m³)")
+        mat_choice = input(f"\nChoose material [1-{len(mat_list)} or Enter for random]: ").strip()
+        wall_material = mat_list[int(mat_choice)-1] if mat_choice.isdigit() else random.choice(mat_list)
         
         # Opening factor
         opening_input = input("\nOpening factor % [0-100 or Enter for random]: ").strip()
@@ -798,8 +850,10 @@ def generate_fds_file():
     # Display chosen parameters
     full_x = room['half_x'] * 2
     full_y = room['half_y'] * 2
+    mat_props = WALL_MATERIALS[wall_material]
     print(f"   Fuel: {fuel}")
     print(f"   Room Size: {room_size} ({full_x}x{full_y}x{room['z']} m)")
+    print(f"   Wall Material: {mat_props['name']}")
     print(f"   Opening Factor: {opening}%")
     print(f"   Fire Size: {fire_size}%")
     print(f"   Mesh Size: {mesh_size} m")
@@ -833,13 +887,13 @@ def generate_fds_file():
     mesh_cells_y = int((2 * hy) / mesh_size)
     mesh_cells_z = int(hz / mesh_size)
     
-    # Wall thickness
-    wall_thick = 0.05
+    # Wall thickness - use material thickness
+    wall_thick = mat_props['thickness']
     
     # Generate FDS file content (calibrated for training HRR range)
     fuel_formula = fuel_props.get('formula', 'C3H8')
     
-    fds_content = f"""&HEAD CHID='GEN_{fuel}_{room_size}_{timestamp}', TITLE='Generated Fire Scenario - Calibrated for Training Range' /
+    fds_content = f"""&HEAD CHID='GEN_{fuel}_{room_size}_{timestamp}', TITLE='Generated Fire Scenario - {mat_props['name']} Walls' /
 
 &MESH IJK={mesh_cells_x},{mesh_cells_y},{mesh_cells_z}, XB={-hx},{hx},{-hy},{hy},0.0,{hz} /
 
@@ -847,35 +901,50 @@ def generate_fds_file():
 
 &REAC FUEL='{fuel_props['fds_name']}', FORMULA='{fuel_formula}', SOOT_YIELD={fuel_props['soot_yield']} /
 
+! Material definition - {mat_props['name']}
+&MATL ID='{wall_material}',
+      CONDUCTIVITY={mat_props['conductivity']},
+      SPECIFIC_HEAT={mat_props['specific_heat']},
+      DENSITY={mat_props['density']},
+      EMISSIVITY={mat_props['emissivity']} /
+
+&SURF ID='WALL_SURF',
+      MATL_ID='{wall_material}',
+      THICKNESS={mat_props['thickness']},
+      COLOR='{mat_props['color']}' /
+
 &SURF ID='FIRE_SOURCE', HRRPUA={hrrpua}, COLOR='ORANGE RED' /
 
 ! Fire source (burner) - Area: {fire_area:.4f} m², Expected peak HRR: ~{hrrpua * fire_area:.1f} kW
 &OBST XB={-fire_half},{fire_half},{-fire_half},{fire_half},0.0,{fire_height}, SURF_ID='FIRE_SOURCE' /
 
-! Room walls (5cm thick) - XMIN wall with door opening
+! Room walls ({mat_props['thickness']*100:.1f}cm thick {mat_props['name']}) - XMIN wall with door opening
 """
     
     if opening > 0:
         door_half = door_width / 2.0
         # Wall with door opening (split into sections)
         fds_content += f"""! Left side of door
-&OBST XB={-hx-wall_thick},{-hx},{-hy},{-door_half},0.0,{hz}, COLOR='GRAY 80' / XMIN wall - left
+&OBST XB={-hx-wall_thick},{-hx},{-hy},{-door_half},0.0,{hz}, SURF_ID='WALL_SURF' / XMIN wall - left
 ! Right side of door
-&OBST XB={-hx-wall_thick},{-hx},{door_half},{hy},0.0,{hz}, COLOR='GRAY 80' / XMIN wall - right
+&OBST XB={-hx-wall_thick},{-hx},{door_half},{hy},0.0,{hz}, SURF_ID='WALL_SURF' / XMIN wall - right
 ! Above door
-&OBST XB={-hx-wall_thick},{-hx},{-door_half},{door_half},{door_height},{hz}, COLOR='GRAY 80' / XMIN wall - above door
+&OBST XB={-hx-wall_thick},{-hx},{-door_half},{door_half},{door_height},{hz}, SURF_ID='WALL_SURF' / XMIN wall - above door
 """
     else:
         # Solid wall (no opening)
-        fds_content += f"""&OBST XB={-hx-wall_thick},{-hx},{-hy},{hy},0.0,{hz}, COLOR='GRAY 80' / XMIN wall
+        fds_content += f"""&OBST XB={-hx-wall_thick},{-hx},{-hy},{hy},0.0,{hz}, SURF_ID='WALL_SURF' / XMIN wall
 """
     
     # Other walls
     fds_content += f"""
 ! Other walls
-&OBST XB={hx},{hx+wall_thick},{-hy},{hy},0.0,{hz}, COLOR='GRAY 80' / XMAX wall
-&OBST XB={-hx},{hx},{-hy-wall_thick},{-hy},0.0,{hz}, COLOR='GRAY 80' / YMIN wall
-&OBST XB={-hx},{hx},{hy},{hy+wall_thick},0.0,{hz}, COLOR='GRAY 80' / YMAX wall
+&OBST XB={hx},{hx+wall_thick},{-hy},{hy},0.0,{hz}, SURF_ID='WALL_SURF' / XMAX wall
+&OBST XB={-hx},{hx},{-hy-wall_thick},{-hy},0.0,{hz}, SURF_ID='WALL_SURF' / YMIN wall
+&OBST XB={-hx},{hx},{hy},{hy+wall_thick},0.0,{hz}, SURF_ID='WALL_SURF' / YMAX wall
+
+! Roof (ceiling)
+&OBST XB={-hx},{hx},{-hy},{hy},{hz},{hz+wall_thick}, SURF_ID='WALL_SURF' / Roof
 
 """
     
@@ -886,7 +955,6 @@ def generate_fds_file():
     fds_content += f"""&VENT MB='XMAX', SURF_ID='OPEN' /
 &VENT MB='YMIN', SURF_ID='OPEN' /
 &VENT MB='YMAX', SURF_ID='OPEN' /
-&VENT MB='ZMAX', SURF_ID='OPEN' /
 
 ! Slice files for visualization and ML training
 &SLCF PBX=0.0, QUANTITY='TEMPERATURE', VECTOR=.TRUE. /
@@ -925,12 +993,85 @@ def generate_fds_file():
         if not run_now or run_now == 'y':
             fds_exe = SCRIPT_DIR / "FDS6" / "bin" / "fds_local.bat"
             if fds_exe.exists():
-                print(f"\n🔥 Injecting parameters into FDS: {filename}")
-                print("   (Grab some coffee. We're solving Navier-Stokes in the background...)\n")
-                print("-" * 70)
+                import re
+
+                print(f"\n🔥 Igniting simulation: {filename}\n")
+
+                BAR_WIDTH = 40
+
+                def _draw_bar(progress_pct):
+                    filled  = int(BAR_WIDTH * progress_pct / 100)
+                    bar     = "█" * filled + "░" * (BAR_WIDTH - filled)
+                    line = f"\r  🔥 [{bar}] {progress_pct:5.1f}%"
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+
                 try:
-                    subprocess.run([str(fds_exe), filename], cwd=str(output_dir), check=True)
-                    print("-" * 70)
+                    import time, re, threading
+
+                    # FDS writes to <CHID>.out — extract CHID from the file content
+                    chid_match = re.search(r"CHID='([^']+)'", fds_content)
+                    chid = chid_match.group(1) if chid_match else filename.replace('.fds', '')
+                    out_file = output_dir / f"{chid}.out"
+
+                    proc = subprocess.Popen(
+                        [str(fds_exe), filename],
+                        cwd=str(output_dir),
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+
+                    SPINNER = ["⠋","⠙","⠸","⠴","⠦","⠇"]
+                    spin_i  = [0]
+                    read_pos = 0
+                    last_sim_t = 0.0
+                    last_displayed_pct = -1
+                    
+                    while proc.poll() is None:
+                        time.sleep(0.5)
+                        spin_i[0] = (spin_i[0] + 1) % len(SPINNER)
+                        updated = False
+                        if out_file.exists():
+                            try:
+                                with open(out_file, 'r', errors='ignore') as fh:
+                                    fh.seek(read_pos)
+                                    chunk = fh.read()
+                                    read_pos = fh.tell()
+                                # Try multiple patterns for FDS output
+                                patterns = [
+                                    r"Total Time:\s*([\d.]+)\s*s",
+                                    r"Time Step\s+\d+\s+.*?T=\s*([\d.]+)",
+                                    r"CURRENT TIME\s*=\s*([\d.]+)",
+                                    r"Step\s+\d+\s+Time:\s*([\d.]+)"
+                                ]
+                                for pattern in patterns:
+                                    for m in re.finditer(pattern, chunk):
+                                        sim_t = float(m.group(1))
+                                        if sim_t > last_sim_t:
+                                            pct = min(sim_t / sim_time * 100, 99.9)
+                                            if abs(pct - last_displayed_pct) >= 0.1 or last_displayed_pct < 0:
+                                                _draw_bar(pct)
+                                                last_displayed_pct = pct
+                                            last_sim_t = sim_t
+                                            updated = True
+                                        break
+                                    if updated:
+                                        break
+                            except Exception:
+                                pass
+                        if not updated and last_displayed_pct < 0:
+                            sys.stdout.write(f"\r  {SPINNER[spin_i[0]]} Starting FDS simulation...".ljust(80))
+                            sys.stdout.flush()
+
+                    print()  # move past the \r line
+
+                    if proc.returncode != 0:
+                        raise subprocess.CalledProcessError(proc.returncode, fds_exe)
+
+                    # Final 100% bar
+                    bar = "█" * BAR_WIDTH
+                    print(f"\r  ✅ [{bar}] 100.0%  — SIMULATION COMPLETE!{' '*20}")
+
                     print(f"\n✅ Reality simulated successfully!")
                     print(f"📁 Fluid dynamics securely quarantined in: {output_dir}")
                     csv_name = filename.replace('.fds', '_hrr.csv')
@@ -951,12 +1092,41 @@ def generate_fds_file():
                                     pass
                         print(f"   Vaporized {deleted_count} unnecessary files.")
                         print("\n💡 The timeline is ready for prediction!")
+
+                        # Ask user if they want to run prediction
+                        print(f"\n🔮 Would you like to run prediction on this scenario?")
+                        run_predict = input("Run prediction now? [Y/n]: ").strip().lower()
+                        
+                        if not run_predict or run_predict == 'y':
+                            try:
+                                print("\n🔮 Running prediction on new scenario...")
+                                run_prediction(str(output_dir / csv_name), save_plot=True, show_plot=False)
+                                
+                                print(f"\n📦 Relocating scenario to training archive ({training_dir.name})...")
+                                import shutil
+                                training_dir = SCRIPT_DIR / "training_data"
+                                training_dir.mkdir(parents=True, exist_ok=True)
+                                
+                                hrr_src = output_dir / csv_name
+                                devc_src = output_dir / csv_name.replace('_hrr', '_devc')
+                                fds_src = output_dir / filename
+                                
+                                if hrr_src.exists(): shutil.move(str(hrr_src), str(training_dir / csv_name))
+                                if devc_src.exists(): shutil.move(str(devc_src), str(training_dir / devc_src.name))
+                                if fds_src.exists(): shutil.move(str(fds_src), str(training_dir / filename))
+                                
+                                sync_from_fds_scenarios()
+                                
+                            except Exception as predict_err:
+                                print(f"❌ Prediction failed: {predict_err}")
+                        else:
+                            print("\n💡 Prediction skipped. Files remain in Input/ folder.")
+
                 except subprocess.CalledProcessError as e:
-                    print("-" * 70)
                     print(f"\n❌ FDS crashed. Return code: {e.returncode}. Maybe check your grid size?")
                 except Exception as e:
-                    print("-" * 70)
                     print(f"\n❌ The simulation experienced a highly improbable anomaly: {e}")
+
             else:
                 print(f"\n❌ FDS executable missing from: {fds_exe}")
                 print("   Cannot warp space-time without it.")
@@ -1690,27 +1860,34 @@ def train_model_interactive():
 # ============================================================================
 
 def sync_from_fds_scenarios():
-    """Sync training_data/ from fds_scenarios/ and rebuild ml_dataset.json"""
+    """Smart-sync: scans training_data/ for explicitly new CSVs and appends them to ml_dataset.json"""
     import json
     import shutil
     import numpy as np
     import pandas as pd
 
-    FDS_DIR      = Path(r"D:\FDS\Small_project\fds_scenarios")
     TRAINING_DIR = SCRIPT_DIR / "training_data"
     DT           = 0.1
-
-    print_section("🔄 SYNC FROM FDS_SCENARIOS")
-
-    if not FDS_DIR.exists():
-        print(f"❌ fds_scenarios/ not found at {FDS_DIR}")
-        print("   Check that the path is correct in fire_predict.py")
-        return
+    
+    print_section("🔄 SMART SYNC: ASSIMILATING NEW DATA")
 
     TRAINING_DIR.mkdir(parents=True, exist_ok=True)
-
-    scenario_dirs = sorted([d for d in FDS_DIR.iterdir() if d.is_dir()])
-    print(f"Found {len(scenario_dirs)} scenario folders in fds_scenarios/\n")
+    ml_path = TRAINING_DIR / "ml_dataset.json"
+    
+    existing_scenarios = set()
+    ml_records = []
+    
+    # Load existing JSON if it exists
+    if ml_path.exists():
+        try:
+            with open(ml_path, "r") as f:
+                dataset = json.load(f)
+                ml_records = dataset.get("scenarios", [])
+                for record in ml_records:
+                    existing_scenarios.add(record["scenario"])
+            print(f"Loaded existing manifest with {len(existing_scenarios)} scenarios.")
+        except Exception as e:
+            print(f"⚠️ Could not read existing JSON ({e}). Rebuilding from scratch.")
 
     def safe_col(df, *names):
         for nm in names:
@@ -1719,28 +1896,59 @@ def sync_from_fds_scenarios():
             if m: return df[m[0]].values
         return None
 
-    copied, skipped, ml_records = 0, 0, []
+    # Find all potential HRR files in the training directory
+    hrr_files = list(TRAINING_DIR.glob("*_hrr.csv"))
 
-    for d in scenario_dirs:
-        name     = d.name
-        hrr_src  = d / f"{name}_hrr.csv"
-        devc_src = d / f"{name}_devc.csv"
+    # Also rescue any orphaned CSVs left behind in Input/ by interrupted runs
+    INPUT_DIR = SCRIPT_DIR / "Input"
+    if INPUT_DIR.exists():
+        orphans = list(INPUT_DIR.glob("*_hrr.csv"))
+        if orphans:
+            print(f"🔍 Found {len(orphans)} orphaned HRR file(s) in Input/ — rescuing...")
+            hrr_files.extend(orphans)
 
-        if not hrr_src.exists():
+    # Optional: also check the external FDS_DIR if it exists for backwards compatibility
+    FDS_DIR = Path(r"D:\FDS\Small_project\fds_scenarios")
+    if FDS_DIR.exists():
+        print("External fds_scenarios/ folder detected. Scanning for legacy imports...")
+        for scenario_dir in [d for d in FDS_DIR.iterdir() if d.is_dir()]:
+            ext_hrr = scenario_dir / f"{scenario_dir.name}_hrr.csv"
+            if ext_hrr.exists(): hrr_files.append(ext_hrr)
+
+    copied, skipped = 0, 0
+
+    print(f"Scanning {len(hrr_files)} HRR files...")
+
+    for hrr_src in hrr_files:
+        # Determine scenario name (remove '_hrr.csv' suffix)
+        name = hrr_src.name.replace("_hrr.csv", "")
+        
+        # Smart Skip: If it's already in the JSON, we don't need to re-parse it!
+        if name in existing_scenarios:
             skipped += 1
             continue
+            
+        devc_src = hrr_src.parent / f"{name}_devc.csv"
 
         try:
-            shutil.copy2(hrr_src, TRAINING_DIR / hrr_src.name)
-            if devc_src.exists():
-                shutil.copy2(devc_src, TRAINING_DIR / devc_src.name)
+            # If the file is coming from the external FDS dir, copy it over first
+            if hrr_src.parent != TRAINING_DIR:
+                dest_hrr = TRAINING_DIR / hrr_src.name
+                shutil.copy2(hrr_src, dest_hrr)
+                hrr_src = dest_hrr # update path to use local copy
+                if devc_src.exists():
+                    shutil.copy2(devc_src, TRAINING_DIR / devc_src.name)
+                    devc_src = TRAINING_DIR / devc_src.name
 
+            # Extract features
             raw  = pd.read_csv(hrr_src, skiprows=1)
             t    = raw.iloc[:, 0].values.astype(float)
             h    = raw.iloc[:, 1].values.astype(float)
             ok   = np.isfinite(t) & np.isfinite(h)
             t, h = t[ok], h[ok]
-            if len(t) < 10: skipped += 1; continue
+            if len(t) < 10: 
+                print(f"  ⚠️  {name}: Skipped (time series too short)")
+                continue
 
             t_end = float(t[-1])
             ct    = np.linspace(0.0, t_end, max(int(round(t_end/DT))+1, 10))
@@ -1767,26 +1975,30 @@ def sync_from_fds_scenarios():
                 "time_to_peak": float(ct[hi.argmax()]), "duration": t_end,
                 "hrr_series": hi.tolist(), "q_radi_series": qr_i, "mlr_series": mlr_i
             })
+            existing_scenarios.add(name)
             copied += 1
-            print(f"  ✅ {name}")
+            print(f"  ✅ Added to dataset: {name}")
 
         except Exception as e:
-            print(f"  ⚠️  {name}: {e}")
-            skipped += 1
+            print(f"  ⚠️  Failed to process {name}: {e}")
 
-    # Write ml_dataset.json
-    ml_path = TRAINING_DIR / "ml_dataset.json"
-    with open(ml_path, "w") as f:
-        json.dump({"n_scenarios": len(ml_records), "dt": DT,
-                   "scenarios": ml_records}, f, indent=2)
-
-    print("\n" + "="*70)
-    print("✅ SYNC COMPLETE")
-    print("="*70)
-    print(f"  Scenarios synced  : {copied}")
-    print(f"  Scenarios skipped : {skipped}  (no _hrr.csv)")
-    print(f"  ml_dataset.json   : {len(ml_records)} scenarios  →  {ml_path}")
-    print("\n💡 Now use Option 6 (Train Model) to retrain on the updated data.")
+    # Write ml_dataset.json (only if changes were made or it doesn't exist)
+    if copied > 0 or not ml_path.exists():
+        with open(ml_path, "w") as f:
+            json.dump({"n_scenarios": len(ml_records), "dt": DT,
+                       "scenarios": ml_records}, f, indent=2)
+        print("\n" + "="*70)
+        print("✅ SMART SYNC COMPLETE")
+        print("="*70)
+        print(f"  Previous scenarios: {len(existing_scenarios) - copied}")
+        print(f"  New injected      : {copied}")
+        print(f"  Total robust DB   : {len(ml_records)} scenarios → {ml_path.name}")
+        print("\n💡 Now use Option 6 (Train Model) to retrain on the updated data.")
+    else:
+        print("\n" + "="*70)
+        print("✅ SMART SYNC ZERO-OP")
+        print("="*70)
+        print(f"  Dataset is already up-to-date. (Skipped {skipped} existing files).")
 
 # ============================================================================
 # MAIN INTERACTIVE INTERFACE

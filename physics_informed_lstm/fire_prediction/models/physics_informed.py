@@ -27,6 +27,42 @@ from utils.physics import (
 )
 
 
+# ═══════════════════════════════════════════════════════════════
+# ✅ QUICK WIN #3: Peak Detection Loss (added 2026-03-04)
+# ═══════════════════════════════════════════════════════════════
+def peak_penalty_loss(pred, target, weight=5.0):
+    """
+    Heavily penalize errors at peak HRR regions.
+    
+    Rationale: Peak HRR is critical for fire safety assessment.
+    Standard MSE treats all errors equally, but peak errors are more important.
+    
+    Args:
+        pred: Predicted HRR [batch, seq_len, 1]
+        target: Target HRR [batch, seq_len, 1]
+        weight: Penalty multiplier for peak regions (default: 5.0)
+    
+    Returns:
+        loss: Weighted MSE with emphasis on peaks
+    """
+    # Flatten to [batch*seq_len]
+    pred_flat = pred.reshape(-1)
+    target_flat = target.reshape(-1)
+    
+    # Identify peak regions (above mean + 1 std)
+    threshold = target_flat.mean() + target_flat.std()
+    peak_mask = target_flat > threshold
+    
+    # Create weight tensor: peaks get higher weight
+    weights = torch.where(peak_mask, weight, 1.0)
+    
+    # Weighted MSE
+    squared_error = (pred_flat - target_flat) ** 2
+    weighted_loss = (weights * squared_error).mean()
+    
+    return weighted_loss
+
+
 class PhysicsInformedLSTM(pl.LightningModule):
     """
     LSTM with Heskestad Physics Integration
@@ -59,7 +95,9 @@ class PhysicsInformedLSTM(pl.LightningModule):
         lambda_physics: float = 0.1,      # Weight for physics penalty
         lambda_monotonic: float = 0.05,   # Weight for monotonicity penalty
         fire_diameter: float = 0.3,       # Fire diameter for Heskestad (m)
-        validate_physics: bool = True     # Approach 3
+        validate_physics: bool = True,    # Approach 3
+        hrr_mean: float = 0.0,            # Un-normalization Mean for HRR
+        hrr_std: float = 1.0              # Un-normalization Std for HRR
     ):
         super().__init__()
         self.save_hyperparameters()
@@ -74,6 +112,9 @@ class PhysicsInformedLSTM(pl.LightningModule):
             batch_first=True,
             dropout=dropout if num_layers > 1 else 0
         )
+        
+        # ✅ QUICK WIN #4: Layer Normalization (added 2026-03-04)
+        self.layer_norm = nn.LayerNorm(hidden_dim)
         
         # Output head
         self.head = nn.Linear(hidden_dim, output_dim * pred_horizon)
@@ -102,8 +143,11 @@ class PhysicsInformedLSTM(pl.LightningModule):
         # Use last timestep
         last_hidden = lstm_out[:, -1, :]
         
+        # ✅ QUICK WIN #4: Apply Layer Normalization
+        normalized = self.layer_norm(last_hidden)
+        
         # Generate predictions
-        out = self.head(last_hidden)
+        out = self.head(normalized)
         
         # Reshape to [batch, pred_horizon, 1]
         batch_size = x.size(0)
@@ -126,27 +170,54 @@ class PhysicsInformedLSTM(pl.LightningModule):
             # Standard MSE
             mse_loss = F.mse_loss(y_hat, y)
             
-            # Physics consistency (Heskestad correlation)
+            # Physics constraint uses true physical values (e.g. kW)
+            y_hat_unnorm = y_hat * self.hparams.hrr_std + self.hparams.hrr_mean
+            y_unnorm = y * self.hparams.hrr_std + self.hparams.hrr_mean
+            
+            # 1. OPTIONAL ENHANCEMENT: Loss Annealing (Ramp up physics weight)
+            # Starts low to fit data, scales up to strictly enforce physics
+            current_epoch = self.current_epoch
+            max_epochs = self.trainer.max_epochs if self.trainer else 50
+            progress = current_epoch / max(max_epochs, 1)
+            # Ramp from 0.1 to self.hparams.lambda_physics
+            current_lambda = 0.1 + (self.hparams.lambda_physics - 0.1) * (progress ** 2)
+            
+            # 2. OPTIONAL ENHANCEMENT: Thomas Ventilation Constraint
+            # If dataset has 9 channels, channel 4 is McCaffrey, channel 5 is Vent Flow
+            vent_flow = None
+            if x.shape[-1] >= 6:
+                # X has shape [batch, timesteps, features]. We want the last timestep's vent flow.
+                # Channel index 4 (0-based) is the Thomas Ventilation flow norm.
+                vent_flow = x[:, -1, 4].unsqueeze(-1) if x.shape[-1] >= 5 else None
+
+            # Physics consistency (Heskestad + Thomas correlation)
             physics_loss = physics_consistency_loss(
-                y_hat, y,
+                y_hat_unnorm, y_unnorm,
+                vent_flow_norm=vent_flow,
                 fire_diameter=self.hparams.fire_diameter,
-                lambda_physics=self.hparams.lambda_physics
+                lambda_physics=current_lambda
             )
             
             # Monotonicity (smooth, physical changes)
             mono_loss = monotonicity_loss(
-                y_hat,
+                y_hat_unnorm,
                 lambda_monotonic=self.hparams.lambda_monotonic
             )
             
+            # ✅ QUICK WIN #3: Peak Penalty Loss
+            peak_loss = peak_penalty_loss(y_hat, y, weight=5.0)
+            
             # Combined loss
-            total_loss = mse_loss + physics_loss + mono_loss
+            total_loss = mse_loss + physics_loss + mono_loss + 0.2 * peak_loss
+            
+            # ✅ QUICK WIN #2: Gradient Clipping (applied in training loop)
             
             # Log components
             self.log("train_loss", total_loss, prog_bar=True)
             self.log("train_mse", mse_loss)
             self.log("train_physics", physics_loss)
             self.log("train_monotonic", mono_loss)
+            self.log("train_peak", peak_loss)
             
             return total_loss
         else:
@@ -169,8 +240,11 @@ class PhysicsInformedLSTM(pl.LightningModule):
         # ═══════════════════════════════════════════════════════════
         if self.hparams.validate_physics:
             # Check physics consistency for first sample in batch
-            pred_hrr = y_hat[0, :, 0].detach().cpu().numpy()
-            true_hrr = y[0, :, 0].detach().cpu().numpy()
+            pred_hrr_norm = y_hat[0, :, 0].detach().cpu().numpy()
+            true_hrr_norm = y[0, :, 0].detach().cpu().numpy()
+            
+            pred_hrr = pred_hrr_norm * self.hparams.hrr_std + self.hparams.hrr_mean
+            true_hrr = true_hrr_norm * self.hparams.hrr_std + self.hparams.hrr_mean
             
             is_valid, metrics = validate_physics_consistency(
                 pred_hrr, true_hrr,
@@ -207,8 +281,11 @@ class PhysicsInformedLSTM(pl.LightningModule):
             physics_errors = []
             
             for i in range(batch_size):
-                pred_hrr = y_hat[i, :, 0].detach().cpu().numpy()
-                true_hrr = y[i, :, 0].detach().cpu().numpy()
+                pred_hrr_norm = y_hat[i, :, 0].detach().cpu().numpy()
+                true_hrr_norm = y[i, :, 0].detach().cpu().numpy()
+                
+                pred_hrr = pred_hrr_norm * self.hparams.hrr_std + self.hparams.hrr_mean
+                true_hrr = true_hrr_norm * self.hparams.hrr_std + self.hparams.hrr_mean
                 
                 is_valid, metrics = validate_physics_consistency(
                     pred_hrr, true_hrr,
@@ -224,8 +301,48 @@ class PhysicsInformedLSTM(pl.LightningModule):
         return {"test_loss": mse, "test_mae": mae}
     
     def configure_optimizers(self):
-        """Adam optimizer"""
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
+        """
+        ✅ QUICK WIN #5: AdamW optimizer with weight decay
+        ✅ QUICK WIN #1: Learning rate scheduling
+        """
+        # AdamW instead of Adam (better generalization)
+        optimizer = torch.optim.AdamW(
+            self.parameters(), 
+            lr=self.hparams.lr,
+            weight_decay=1e-4  # Regularization
+        )
+        
+        # ReduceLROnPlateau scheduler (reduces LR when validation plateaus)
+        scheduler = {
+            'scheduler': torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer, 
+                mode='min',
+                factor=0.5,        # Reduce LR by half
+                patience=5,        # Wait 5 epochs before reducing
+                verbose=True,      # Print when LR changes
+                min_lr=1e-6        # Don't go below this
+            ),
+            'monitor': 'val_loss',  # Watch validation loss
+            'interval': 'epoch',
+            'frequency': 1
+        }
+        
+        return {'optimizer': optimizer, 'lr_scheduler': scheduler}
+    
+    def configure_gradient_clipping(
+        self, 
+        optimizer, 
+        gradient_clip_val=None, 
+        gradient_clip_algorithm=None
+    ):
+        """
+        ✅ QUICK WIN #2: Gradient clipping for training stability
+        """
+        self.clip_gradients(
+            optimizer,
+            gradient_clip_val=1.0,  # Clip gradients to max norm of 1.0
+            gradient_clip_algorithm="norm"
+        )
     
     def on_validation_epoch_end(self):
         """Report physics violation rate"""

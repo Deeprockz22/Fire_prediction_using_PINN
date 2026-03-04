@@ -36,7 +36,7 @@ def check_current_model():
     
     checks = {
         "LR Scheduler": "ReduceLROnPlateau" in content or "CosineAnnealing" in content,
-        "Gradient Clipping": "clip_grad_norm" in content,
+        "Gradient Clipping": "clip_gradients" in content or "clip_grad_norm" in content or "configure_gradient_clipping" in content,
         "Peak Loss": "peak_penalty" in content or "peak_detection" in content,
         "Layer Norm": "LayerNorm" in content,
         "AdamW": "AdamW" in content

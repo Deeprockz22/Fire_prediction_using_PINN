@@ -1,0 +1,12 @@
+Loading model...
+Loading real FDS data...
+
+--- RESULTS FOR FIGURE 5 ---
+Replace the 'true_hrr' and 'physics_pred' variables in generate_figures.py with these arrays:
+
+# Data arrays to copy into generate_publication_figures.py (Lines 169-174)
+time = np.arange(40)
+true_hrr = np.array([np.float64(0.33), np.float64(0.41), np.float64(0.5), np.float64(0.62), np.float64(0.76), np.float64(0.91), np.float64(1.07), np.float64(1.23), np.float64(1.39), np.float64(1.54), np.float64(1.69), np.float64(1.81), np.float64(1.94), np.float64(2.09), np.float64(2.23), np.float64(2.38), np.float64(2.51), np.float64(2.64), np.float64(2.76), np.float64(2.86), np.float64(2.95), np.float64(3.04), np.float64(3.24), np.float64(3.63), np.float64(3.98), np.float64(4.4), np.float64(4.86), np.float64(5.15), np.float64(5.57), np.float64(5.77), np.float64(6.1), np.float64(6.31), np.float64(6.6), np.float64(6.96), np.float64(7.24), np.float64(7.51), np.float64(7.91), np.float64(8.16), np.float64(8.45), np.float64(8.77)])
+physics_pred = np.array([np.float64(0.33), np.float64(0.41), np.float64(0.5), np.float64(0.62), np.float64(0.76), np.float64(0.91), np.float64(1.07), np.float64(1.23), np.float64(1.39), np.float64(1.54), np.float64(1.69), np.float64(1.81), np.float64(1.94), np.float64(2.09), np.float64(2.23), np.float64(2.38), np.float64(2.51), np.float64(2.64), np.float64(2.76), np.float64(2.86), np.float64(2.95), np.float64(3.04), np.float64(3.24), np.float64(3.63), np.float64(3.98), np.float64(4.4), np.float64(4.86), np.float64(5.15), np.float64(5.57), np.float64(5.77), np.float64(3.52), np.float64(3.51), np.float64(3.55), np.float64(3.57), np.float64(3.56), np.float64(3.57), np.float64(3.59), np.float64(3.58), np.float64(3.54), np.float64(3.56)])
+
+REAL MODEL MAE: 3.85 kW

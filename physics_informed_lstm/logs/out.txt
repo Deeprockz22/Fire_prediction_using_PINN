@@ -1,0 +1,79 @@
+
+  [91mΓûêΓûêΓòù  ΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòùΓûêΓûêΓòù  ΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòù ΓûêΓûêΓûêΓûêΓûêΓòù ΓûêΓûêΓûêΓûêΓûêΓûêΓòù [0m
+  [91mΓûêΓûêΓòæ  ΓûêΓûêΓòæΓûêΓûêΓòöΓòÉΓòÉΓòÉΓòÉΓò¥ΓûêΓûêΓòöΓòÉΓòÉΓòÉΓòÉΓò¥ΓûêΓûêΓòæ ΓûêΓûêΓòöΓò¥ΓûêΓûêΓòöΓòÉΓòÉΓòÉΓòÉΓò¥ΓûêΓûêΓòöΓòÉΓòÉΓòÉΓòÉΓò¥ΓòÜΓòÉΓòÉΓûêΓûêΓòöΓòÉΓòÉΓò¥ΓûêΓûêΓòöΓòÉΓòÉΓûêΓûêΓòùΓûêΓûêΓòöΓòÉΓòÉΓûêΓûêΓòù[0m
+  [93mΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòæΓûêΓûêΓûêΓûêΓûêΓòù  ΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓòöΓò¥ ΓûêΓûêΓûêΓûêΓûêΓòù  ΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòù   ΓûêΓûêΓòæ   ΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòæΓûêΓûêΓòæ  ΓûêΓûêΓòæ[0m
+  [93mΓûêΓûêΓòöΓòÉΓòÉΓûêΓûêΓòæΓûêΓûêΓòöΓòÉΓòÉΓò¥  ΓòÜΓòÉΓòÉΓòÉΓòÉΓûêΓûêΓòæΓûêΓûêΓòöΓòÉΓûêΓûêΓòù ΓûêΓûêΓòöΓòÉΓòÉΓò¥  ΓòÜΓòÉΓòÉΓòÉΓòÉΓûêΓûêΓòæ   ΓûêΓûêΓòæ   ΓûêΓûêΓòöΓòÉΓòÉΓûêΓûêΓòæΓûêΓûêΓòæ  ΓûêΓûêΓòæ[0m
+  [33mΓûêΓûêΓòæ  ΓûêΓûêΓòæΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòæΓûêΓûêΓòæ  ΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòùΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓòæ   ΓûêΓûêΓòæ   ΓûêΓûêΓòæ  ΓûêΓûêΓòæΓûêΓûêΓûêΓûêΓûêΓûêΓòöΓò¥[0m
+  [33mΓòÜΓòÉΓò¥  ΓòÜΓòÉΓò¥ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥ΓòÜΓòÉΓò¥  ΓòÜΓòÉΓò¥ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥   ΓòÜΓòÉΓò¥   ΓòÜΓòÉΓò¥  ΓòÜΓòÉΓò¥ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥ [0m
+
+  [97mPhysics-Informed LSTM  ┬╖  Predicting the Future of Fire v2.0.0[0m
+  [90mBecause running CFD in real-time is for people who enjoy waiting.[0m
+
+  [93mThis AI has ingested the knowledge of 221 fires and 3 physics books.[0m
+  [93mIt is now mildly concerned about your smoking habits.[0m
+
+
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé  ≡ƒôª BATCH PROCESSING                                                Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
+
+Γ£à Found 4 file(s)
+
+
+[1/4] GEN_ETHANOL_small_20260303_120726_cpu.csv
+--------------------------------------------------
+≡ƒôè Reading data: GEN_ETHANOL_small_20260303_120726_cpu.csv
+   Γ£à 0 time steps loaded
+
+Γ¥î Error reading file: zero-size array to reduction operation maximum which has no identity
+
+[2/4] GEN_ETHANOL_small_20260303_120726_devc.csv
+--------------------------------------------------
+≡ƒôè Reading data: GEN_ETHANOL_small_20260303_120726_devc.csv
+   Γ£à 1001 time steps loaded
+   ≡ƒôê Peak HRR: 308.54 kW
+
+≡ƒö¼ Computing physics features...
+
+≡ƒºá Loading neural network...
+   ≡ƒôª Loading model checkpoint...
+   ≡ƒôè Detected model input dimension: 9
+Γ¥î Error: Error(s) in loading state_dict for PhysicsInformedLSTM:
+	size mismatch for lstm.weight_ih_l0: copying a param with shape torch.Size([1024, 9]) from checkpoint, the shape in current model is torch.Size([512, 9]).
+	size mismatch for lstm.weight_hh_l0: copying a param with shape torch.Size([1024, 256]) from checkpoint, the shape in current model is torch.Size([512, 128]).
+	size mismatch for lstm.bias_ih_l0: copying a param with shape torch.Size([1024]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for lstm.bias_hh_l0: copying a param with shape torch.Size([1024]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for lstm.weight_ih_l1: copying a param with shape torch.Size([1024, 256]) from checkpoint, the shape in current model is torch.Size([512, 128]).
+	size mismatch for lstm.weight_hh_l1: copying a param with shape torch.Size([1024, 256]) from checkpoint, the shape in current model is torch.Size([512, 128]).
+	size mismatch for lstm.bias_ih_l1: copying a param with shape torch.Size([1024]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for lstm.bias_hh_l1: copying a param with shape torch.Size([1024]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for head.weight: copying a param with shape torch.Size([10, 256]) from checkpoint, the shape in current model is torch.Size([10, 128]).
+
+[3/4] GEN_ETHANOL_small_20260303_120726_hrr.csv
+--------------------------------------------------
+≡ƒôè Reading data: GEN_ETHANOL_small_20260303_120726_hrr.csv
+   Γ£à 301 time steps loaded
+   ≡ƒôê Peak HRR: 87.89 kW
+
+≡ƒö¼ Computing physics features...
+
+≡ƒºá Loading neural network...
+   ≡ƒôª Loading model checkpoint...
+   ≡ƒôè Detected model input dimension: 9
+Γ¥î Error: Error(s) in loading state_dict for PhysicsInformedLSTM:
+	size mismatch for lstm.weight_ih_l0: copying a param with shape torch.Size([1024, 9]) from checkpoint, the shape in current model is torch.Size([512, 9]).
+	size mismatch for lstm.weight_hh_l0: copying a param with shape torch.Size([1024, 256]) from checkpoint, the shape in current model is torch.Size([512, 128]).
+	size mismatch for lstm.bias_ih_l0: copying a param with shape torch.Size([1024]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for lstm.bias_hh_l0: copying a param with shape torch.Size([1024]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for lstm.weight_ih_l1: copying a param with shape torch.Size([1024, 256]) from checkpoint, the shape in current model is torch.Size([512, 128]).
+	size mismatch for lstm.weight_hh_l1: copying a param with shape torch.Size([1024, 256]) from checkpoint, the shape in current model is torch.Size([512, 128]).
+	size mismatch for lstm.bias_ih_l1: copying a param with shape torch.Size([1024]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for lstm.bias_hh_l1: copying a param with shape torch.Size([1024]) from checkpoint, the shape in current model is torch.Size([512]).
+	size mismatch for head.weight: copying a param with shape torch.Size([10, 256]) from checkpoint, the shape in current model is torch.Size([10, 128]).
+
+[4/4] GEN_ETHANOL_small_20260303_120726_steps.csv
+--------------------------------------------------
+≡ƒôè Reading data: GEN_ETHANOL_small_20260303_120726_steps.csv
+   Γ£à 31 time steps loaded
+
+Γ¥î Error reading file: Unknown format code 'f' for object of type 'str'
